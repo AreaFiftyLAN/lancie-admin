@@ -17,7 +17,6 @@ const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
 const cssSlam = require('css-slam').gulp;
 const htmlMinifier = require('gulp-html-minifier');
-const jshint = require('gulp-jshint');
 const superagent = require('superagent');
 const fs = require('fs-extra');
 const glob = require('glob');
@@ -135,14 +134,6 @@ gulp.task('ensure-images-optimized', () =>
     }
   })
 );
-
-function linter() {
-  return gulp.src([ 'scripts/**/*.js',
-                    'src/**/*.html' ])
-      .pipe(jshint.extract()) // Extract JS from .html files
-      .pipe(jshint())
-      .pipe(jshint.reporter('jshint-stylish'));
-}
 
 // Clean the build directory, split all source and dependency files into streams
 // and process them, and output bundled and unbundled versions of the project

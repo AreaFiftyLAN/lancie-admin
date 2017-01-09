@@ -8,7 +8,6 @@
  ],
  "navigateFallback": "/index.html",
  "runtimeCaching": [{
-   "urlPattern": "/https:\\/\\/fonts\\.googleapis\\.com\\//",
    "handler": "cacheFirst"
  }]
 }

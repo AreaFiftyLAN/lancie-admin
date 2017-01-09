@@ -2,8 +2,7 @@
   "entrypoint": "index.html",
   "shell": "src/lancie-admin-app.html",
   "sourceGlobs": [
-   "images-optimized/**/*",
-   "scripts/*"
+   "images-optimized/**/*"
   ],
   "fragments": [
   ],
