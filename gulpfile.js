@@ -17,6 +17,7 @@ const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
 const cssSlam = require('css-slam').gulp;
 const htmlMinifier = require('gulp-html-minifier');
+const jshint = require('gulp-jshint');
 const superagent = require('superagent');
 const fs = require('fs-extra');
 const glob = require('glob');
@@ -100,6 +101,10 @@ function dependencies() {
 const root = path.resolve(process.cwd(), 'images');
 const optimizedImagesRoot = path.resolve(process.cwd(), 'images-optimized');
 const imageOptions = {
+  activities: '340x340',
+  logos: '250,scale-down',
+  unofficial: '340x340',
+  slider: '2000x500,scale-down'
 };
 
 // Optimize images with ImageOptim
@@ -135,10 +140,18 @@ gulp.task('ensure-images-optimized', () =>
   })
 );
 
+function linter() {
+  return gulp.src([ 'scripts/**/*.js',
+                    'src/**/*.html' ])
+      .pipe(jshint.extract()) // Extract JS from .html files
+      .pipe(jshint())
+      .pipe(jshint.reporter('jshint-stylish'));
+}
+
 // Clean the build directory, split all source and dependency files into streams
 // and process them, and output bundled and unbundled versions of the project
 // with their own service workers
 gulp.task('default', gulp.series([
-  clean([ global.config.build.rootDirectory ]),
+  clean([ global.config.build.rootDirectory ]), linter,
   project.merge(source, dependencies), project.serviceWorker
 ]));
