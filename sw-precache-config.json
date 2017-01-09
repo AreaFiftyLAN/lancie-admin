@@ -7,7 +7,5 @@
    "/bower_components/webcomponentsjs/webcomponents-lite.min.js"
  ],
  "navigateFallback": "/index.html",
- "runtimeCaching": [{
-   "handler": "cacheFirst"
- }]
+ "runtimeCaching": []
 }
