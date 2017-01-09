@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+bower_components
+.tmp
+npm-debug.log
+.idea
+*.pem
+images-optimized

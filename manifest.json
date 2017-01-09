@@ -1,0 +1,7 @@
+{
+  "name": "lancie-admin",
+  "short_name": "lancie-admin",
+  "description": "Admin panel for the LANcie API",
+  "start_url": "/",
+  "display": "standalone"
+}
