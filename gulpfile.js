@@ -139,6 +139,6 @@ gulp.task('ensure-images-optimized', () =>
 // and process them, and output bundled and unbundled versions of the project
 // with their own service workers
 gulp.task('default', gulp.series([
-  clean([ global.config.build.rootDirectory ]), linter,
+  clean([ global.config.build.rootDirectory ]),
   project.merge(source, dependencies), project.serviceWorker
 ]));
