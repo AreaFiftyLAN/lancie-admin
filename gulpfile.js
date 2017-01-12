@@ -101,10 +101,7 @@ function dependencies() {
 const root = path.resolve(process.cwd(), 'images');
 const optimizedImagesRoot = path.resolve(process.cwd(), 'images-optimized');
 const imageOptions = {
-  activities: '340x340',
-  logos: '250,scale-down',
-  unofficial: '340x340',
-  slider: '2000x500,scale-down'
+  logos: '250,scale-down'
 };
 
 // Optimize images with ImageOptim
