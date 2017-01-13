@@ -1,12 +1,12 @@
 {
   "entrypoint": "index.html",
   "shell": "src/lancie-admin-app.html",
-  "sourceGlobs": [
+  "sources": [
    "images-optimized/**/*"
   ],
   "fragments": [
   ],
-  "includeDependencies": [
+  "extraDependencies": [
     "manifest.json",
     "favicon.ico",
     "robots.txt",
