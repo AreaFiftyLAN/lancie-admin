@@ -1,0 +1,15 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/lancie-admin-app.html",
+  "sources": [
+   "images-optimized/**/*"
+  ],
+  "fragments": [
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "favicon.ico",
+    "robots.txt",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+  ]
+}
