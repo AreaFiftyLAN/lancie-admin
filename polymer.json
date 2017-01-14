@@ -5,6 +5,9 @@
    "images-optimized/**/*"
   ],
   "fragments": [
+    "src/lancie-admin-home/lancie-admin-home.html",
+    "src/lancie-admin-endpoint/lancie-admin-endpoint.html",
+    "src/lancie-admin-404.html"
   ],
   "extraDependencies": [
     "manifest.json",
