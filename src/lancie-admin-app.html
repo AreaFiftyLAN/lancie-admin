@@ -1,27 +1,34 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="lancie-admin-content.html">
+<link rel="import" href="lancie-admin-layout/lancie-admin-layout.html">
+
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <dom-module id="lancie-admin-app">
   <template>
+    <style include="iron-flex iron-flex-alignment"></style>
     <style>
       :host {
         display: block;
+        --primary-color: #1a2b43;
+        --secondary-color: #ffe574;
+      }
+
+      lancie-content {
+        @apply(--layout-flex);
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
+    <lancie-admin-layout class="layout vertical" route="{{route}}">
+      <lancie-admin-content page="{{route}}"></lancie-admin-content>
+    </lancie-admin-layout>
   </template>
-
   <script>
+  'use strict';
+
+  (function() {
     Polymer({
-
       is: 'lancie-admin-app',
-
-      properties: {
-        prop1: {
-          type: String,
-          value: 'lancie-admin-app',
-        },
-      },
-
     });
+  })();
   </script>
 </dom-module>

@@ -1,0 +1,107 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="lancie-admin-layout">
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        color: black;
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      app-toolbar {
+        background-color: var(--primary-color);
+        color: var(--secondary-color);
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      iron-image {
+        height: 40px;
+        width: 200px;
+        margin-left: 16px;
+      }
+
+      app-header {
+        width: 100%;
+      }
+    </style>
+
+
+    <app-header-layout fullbleed>
+      <app-drawer-layout fullbleed>
+        <app-drawer>
+          <app-toolbar>
+            <iron-image preload fade sizing="contain" position="left" src="../../images-optimized/logo_without_date.png"></iron-image>
+          </app-toolbar>
+
+          <paper-menu selected="{{route.page}}" attr-for-selected="data-route">
+            <paper-item data-route=""><a href="/">Home</a></paper-item>
+            <paper-item data-route="users"><a href="/users">Users</a></paper-item>
+            <paper-item data-route="orders"><a href="/orders">Orders</a></paper-item>
+            <paper-item data-route="tickets"><a href="/tickets">Tickets</a></paper-item>
+            <paper-item data-route="teams"><a href="/teams">Teams</a></paper-item>
+          </paper-menu>
+        </app-drawer>
+
+        <app-header fixed effects="waterfall">
+          <app-toolbar class="layout horizontal">
+            <paper-icon-button class="menu-button" icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title>[[_getTitle(route)]]</div>
+          </app-toolbar>
+        </app-header>
+
+        <content></content>
+
+      </app-drawer-layout>
+    </app-header-layout>
+
+    <iron-media-query query="min-width: 640px" query-matches="{{wideLayout}}"></iron-media-query>
+
+  </template>
+  <script>
+  'use strict';
+
+  (function() {
+    Polymer({
+      is: 'lancie-admin-layout',
+      properties: {
+        route: {
+          type: Object,
+          notify: true
+        }
+      },
+
+      _getTitle: function(route) {
+        if (route.page === '') {
+          return 'Admin';
+        }
+        return route.page.charAt(0).toUpperCase() + route.page.slice(1);
+      },
+    });
+  })();
+  </script>
+</dom-module>

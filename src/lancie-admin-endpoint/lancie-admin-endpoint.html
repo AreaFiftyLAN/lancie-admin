@@ -1,0 +1,42 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<dom-module id="lancie-admin-endpoint">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 16px;
+      }
+
+      paper-card {
+        width: 100%;
+      }
+    </style>
+
+    <paper-card heading="[[endpoint]]">
+      <div class="card-content">
+        <p>Here is where the [[endpoint]] will be.</p>
+        <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
+      </div>
+    </paper-card>
+
+  </template>
+  <script>
+  'use strict';
+
+  (function() {
+    Polymer({
+      is: 'lancie-admin-endpoint',
+      properties: {
+        endpoint: String,
+      },
+
+      _getEndPoint: function(endpoint) {
+        return endpoint.toLowerCase();
+      },
+    });
+  })();
+  </script>
+</dom-module>
