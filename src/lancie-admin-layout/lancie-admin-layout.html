@@ -7,10 +7,10 @@
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
 
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
@@ -23,10 +23,6 @@
       :host {
         color: black;
         display: block;
-      }
-
-      [hidden] {
-        display: none !important;
       }
 
       app-toolbar {
@@ -66,11 +62,26 @@
         </app-toolbar>
 
         <paper-menu selected="{{route.page}}" attr-for-selected="data-route">
-          <paper-item data-route=""><a href="/">Home</a></paper-item>
-          <paper-item data-route="users"><a href="/users">Users</a></paper-item>
-          <paper-item data-route="orders"><a href="/orders">Orders</a></paper-item>
-          <paper-item data-route="tickets"><a href="/tickets">Tickets</a></paper-item>
-          <paper-item data-route="teams"><a href="/teams">Teams</a></paper-item>
+          <paper-icon-item data-route="">
+            <iron-icon icon="home" item-icon></iron-icon>
+            <a href="">Home</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="users">
+            <iron-icon icon="social:person" item-icon></iron-icon>
+            <a href="/users">Users</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="orders">
+            <iron-icon icon="shopping-cart" item-icon></iron-icon>
+            <a href="/orders">Orders</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="tickets">
+            <iron-icon icon="receipt" item-icon></iron-icon>
+            <a href="/tickets">Tickets</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="teams">
+            <iron-icon icon="social:group" item-icon></iron-icon>
+            <a href="/teams">Teams</a>
+          </paper-icon-item>
         </paper-menu>
       </app-drawer>
 
