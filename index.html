@@ -1,20 +1,112 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+<html lang="">
 
-    <title>lancie-admin</title>
-    <meta name="description" content="lancie-admin description">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="AreaFiftyLAN Admin">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AreaFiftyLAN Admin</title>
 
-    <!-- See https://goo.gl/OOhYW5 -->
-    <link rel="manifest" href="/manifest.json">
+  <!-- Social media sharing Open Graph Protocol -->
+  <meta property="og:title" content="AreaFiftyLAN Admin" />
+  <meta property="og:description" content="Administration tool for AreaFiftyLAN" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://areafiftylan.nl/admin/" />
+  <meta property="og:image" content="https://areafiftylan.nl/images-optimized/lancie/logo_without_date_with_background.png" />
 
-    <script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-    <link rel="import" href="/src/lancie-admin-app.html">
-  </head>
-  <body>
-    <lancie-admin-app></lancie-admin-app>
-  </body>
+  <!-- Chrome for Android theme color -->
+  <meta name="theme-color" content="#1A2B43">
+
+  <!-- Web Application Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tile color for Win8 -->
+  <meta name="msapplication-TileColor" content="#3372DF">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="AreaFiftyLAN Admin">
+  <link rel="icon" sizes="192x192" href="images-optimized/touch/chrome-touch-icon-192x192.png">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="AreaFiftyLAN Admin">
+  <link rel="apple-touch-icon" href="images-optimized/touch/apple-touch-icon.png">
+
+  <!-- Tile icon for Win8 (144x144) -->
+  <meta name="msapplication-TileImage" content="images-optimized/touch/ms-touch-icon-144x144-precomposed.png">
+
+  <style>
+    body {
+      background: #fafafa;
+      font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #333;
+      background-color: #eeecec;
+      margin: 0;
+    }
+
+    .placeholder-header {
+      height: 64px;
+      background-color: #1a2b43;
+    }
+  </style>
+
+  <script>
+    window.Polymer = {
+      lazyRegister: true,
+      dom: 'shadow'
+    };
+
+    // Load webcomponentsjs polyfill if browser does not support native
+    // Web Components
+    (function() {
+      'use strict';
+      var onload = function() {
+        // For native Imports, manually fire WebComponentsReady so user code
+        // can use the same code path for native and polyfill'd imports.
+        if (!window.HTMLImports) {
+          document.dispatchEvent(
+            new CustomEvent('WebComponentsReady', {bubbles: true})
+          );
+        }
+      };
+      var webComponentsSupported = (
+        'registerElement' in document &&
+        'import' in document.createElement('link') &&
+        'content' in document.createElement('template')
+      );
+      if (!webComponentsSupported) {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'bower_components/webcomponentsjs/webcomponents-lite.min.js';
+        script.onload = onload;
+        document.head.appendChild(script);
+      } else {
+        onload();
+      }
+    })();
+  </script>
+
+  <link rel="import" href="src/lancie-admin-app.html" async />
+</head>
+
+<body class="fullbleed layout vertical">
+  <lancie-admin-app>
+    <div class="placeholder-header"></div>
+  </lancie-admin-app>
+</body>
+
 </html>

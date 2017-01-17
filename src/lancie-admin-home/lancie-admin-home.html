@@ -1,0 +1,37 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<dom-module id="lancie-admin-home">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 16px;
+      }
+
+      paper-card {
+        width: 100%;
+      }
+    </style>
+
+    <paper-card heading="Home">
+      <div class="card-content">
+        <p>This is the starting point of the AreaFiftyLAN Admin page. The homepage will contain some graphs and a dashboard like view.</p>
+      </div>
+    </paper-card>
+
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'lancie-admin-home',
+      properties: {
+      },
+    });
+  })();
+  </script>
+</dom-module>
