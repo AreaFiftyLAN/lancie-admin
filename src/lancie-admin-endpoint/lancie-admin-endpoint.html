@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
 
 <dom-module id="lancie-admin-endpoint">
   <template>
@@ -22,11 +23,45 @@
       }
     </style>
 
+    <lancie-ajax
+      id="endpointAjax"
+      refurl="/[[_getEndPoint(endpoint)]]"
+      method="GET"
+      lastResponse="{{data}}">
+    </lancie-ajax>
+
+
     <paper-card heading="[[endpoint]]">
       <div class="card-content">
         <p>Here is where the [[endpoint]] will be.</p>
         <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
       </div>
+
+      <vaadin-grid>
+        <table>
+          <colgroup>
+            <col>
+            <col>
+            <col>
+          </colgroup>
+          <thead>
+          <tr>
+            <th>First</th>
+            <th>Last</th>
+            <th>Email</th>
+          </tr>
+          </thead>
+          <tbody>
+            <template is="dom-repeat" items="{{data}}">
+              <tr>
+                <td>{{item[0]}}</td>
+                <td>{{item[1]}}</td>
+                <td>{{item[2]}}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </vaadin-grid>
     </paper-card>
 
   </template>
