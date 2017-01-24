@@ -1,15 +1,16 @@
-FROM ngnix:alpine
+FROM nginx:alpine
 
-RUN curl -o- https://yarnpkg.com/install.sh | bash
+RUN apk --no-cache add curl bash tar
+RUN curl -o- -L https://yarnpkg.com/install.sh | sh
 
 RUN mkdir -p /app
 WORKDIR /app
 
-RUN yarn
-RUN yarn global add bower
+RUN ~/.yarn/bin/yarnpkg
+RUN ~/.yarn/bin/yarnpkg global add bower
 RUN bower install
-RUN yarn run build optimize-images
-RUN yarn run build
+RUN ~/.yarn/bin/yarnpkg run build optimize-images
+RUN ~/.yarn/bin/yarnpkg run build
 
 COPY ./build/bundled/. /app/.
 
