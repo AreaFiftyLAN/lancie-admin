@@ -1,17 +1,19 @@
 FROM nginx:alpine
 
-RUN apk --no-cache add curl bash tar
-RUN curl -o- -L https://yarnpkg.com/install.sh | sh
+RUN apk --no-cache add nodejs-lts git
 
-RUN mkdir -p /app
-WORKDIR /app
+WORKDIR /tmp
+ADD . ./
 
-RUN ~/.yarn/bin/yarnpkg
-RUN ~/.yarn/bin/yarnpkg global add bower
-RUN bower install
-RUN ~/.yarn/bin/yarnpkg run build optimize-images
-RUN ~/.yarn/bin/yarnpkg run build
+RUN npm install -g yarn bower
+RUN yarn
+RUN bower --allow-root install
+RUN npm run build optimize-images
+RUN npm run build
 
-COPY ./build/bundled/. /app/.
+COPY ./build/bundled/. /usr/share/nginx/html
 
-EXPOSE 443
+RUN rm -r * .*
+RUN apt del nodejs-lts git
+
+EXPOSE 80 443
