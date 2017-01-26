@@ -3,7 +3,7 @@ FROM nginx:alpine
 WORKDIR /tmp/app
 ADD . ./
 
-RUN apk --no-cache add nodejs-lts git &&\
+RUN apk --no-cache add nodejs-lts git && \
     npm install -g yarn bower && \
     yarn && \
     bower --allow-root install && \
@@ -13,4 +13,6 @@ RUN apk --no-cache add nodejs-lts git &&\
     rm -r /tmp/app && \
     apk del nodejs-lts git
 
-EXPOSE 80 443
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
