@@ -10,7 +10,11 @@ RUN apk --no-cache add nodejs-lts git && \
     yarn run build optimize-images && \
     yarn run build && \
     cp -r ./build/bundled/. /usr/share/nginx/html && \
-    rm -r /tmp/app && \
+    yarn cache clean && \
+    bower --allow-root cache clean && \
+    npm cache clean && \
+    npm uninstall -g yarn bower && \
+    rm -r /tmp && \
     apk del nodejs-lts git
 
 EXPOSE 8080
