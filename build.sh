@@ -11,7 +11,7 @@ bower --allow-root install
 # Compress images and build
 yarn run build optimize-images
 yarn run build
-cp -r ./build/bundled/. /usr/share/nginx/html
+cp -r ./build/bundled/. /srv/www
 
 # Uninstall installed build dependencies and remove cache
 yarn cache clean
