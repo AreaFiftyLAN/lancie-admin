@@ -41,7 +41,7 @@ To run the container:
 docker run -p 8080:80 lancie-admin:latest
 ```
 
-You can now view the admin page on `localhost`,
+You can now view the admin page on `localhost:8080`,
 
 ## Running Tests
 
