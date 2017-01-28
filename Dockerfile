@@ -5,6 +5,4 @@ ADD . ./
 
 RUN sh ./build.sh
 
-COPY nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80
+COPY default.conf /etc/nginx/conf.d/default.conf
