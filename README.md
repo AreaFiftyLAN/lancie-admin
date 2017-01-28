@@ -29,6 +29,20 @@ from:
 $ polymer serve build/bundled
 ```
 
+## Building with Docker
+
+To build the application with docker, issue the following command:
+```
+docker build -t lancie-admin .
+```
+
+To run the container:
+```
+docker run -p 8080:80 lancie-admin:latest
+```
+
+You can now view the admin page on `localhost:8080`,
+
 ## Running Tests
 
 ```
