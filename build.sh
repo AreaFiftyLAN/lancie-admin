@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 # Install programs required for build
 apk --no-cache add nodejs-lts git
