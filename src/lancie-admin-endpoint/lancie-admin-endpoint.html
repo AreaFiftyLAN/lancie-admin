@@ -2,6 +2,8 @@
 
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../lancie-admin-login/lancie-ajax.html">
+
 
 <dom-module id="lancie-admin-endpoint">
   <template>
@@ -23,11 +25,10 @@
       }
     </style>
 
-    <lancie-ajax
+    <lancie-ajax auto
       id="endpointAjax"
-      refurl="/[[_getEndPoint(endpoint)]]"
-      method="GET"
-      lastResponse="{{data}}">
+      refurl="[[_getEndPoint(endpoint)]]"
+      on-response="onResponse">
     </lancie-ajax>
 
 
@@ -37,29 +38,13 @@
         <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
       </div>
 
-      <vaadin-grid>
+      <vaadin-grid items="[[data]]">
         <table>
           <colgroup>
-            <col>
-            <col>
-            <col>
+            <col name="text">
+            <col name="price">
+            <col name="numberSold">
           </colgroup>
-          <thead>
-          <tr>
-            <th>First</th>
-            <th>Last</th>
-            <th>Email</th>
-          </tr>
-          </thead>
-          <tbody>
-            <template is="dom-repeat" items="{{data}}">
-              <tr>
-                <td>{{item[0]}}</td>
-                <td>{{item[1]}}</td>
-                <td>{{item[2]}}</td>
-              </tr>
-            </template>
-          </tbody>
         </table>
       </vaadin-grid>
     </paper-card>
@@ -74,6 +59,18 @@
       is: 'lancie-admin-endpoint',
       properties: {
         endpoint: String,
+        data: Object,
+      },
+
+      ready: function() {
+        this.$.endpointAjax.generateRequest();
+      },
+
+      onResponse: function(e, request) {
+        console.log("Got response!");
+        console.log(request.response);
+        this.data = request.response;
+        console.log(request.response);
       },
 
       _getEndPoint: function(endpoint) {
