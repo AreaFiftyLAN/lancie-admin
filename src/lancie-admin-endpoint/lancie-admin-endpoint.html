@@ -17,6 +17,13 @@
         margin: 16px;
       }
 
+      vaadin-grid {
+        --primary-color: #ffe574;
+        --vaadin-grid-row-stripe-cell: {
+          background-color: #FBFBFB;
+        }
+      }
+
       @media(max-width: 640px) {
         paper-card {
           width: 100%;
@@ -31,30 +38,27 @@
       on-response="onResponse">
     </lancie-ajax>
 
-
     <paper-card heading="[[endpoint]]">
       <div class="card-content">
         <p>Here is where the [[endpoint]] will be.</p>
         <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
-      </div>
 
-      <vaadin-grid items="[[data]]">
-        <table>
-          <colgroup>
-            <col name="text">
-            <col name="price">
-            <col name="numberSold">
-          </colgroup>
-        </table>
-      </vaadin-grid>
+        <vaadin-grid id="grid" items="[[data]]">
+          <table>
+            <colgroup>
+            </colgroup>
+          </table>
+        </vaadin-grid>
+
+      </div>
     </paper-card>
 
   </template>
 
   <script>
-  (function() {
-    'use strict';
+  'use strict';
 
+  (function() {
     Polymer({
       is: 'lancie-admin-endpoint',
       properties: {
@@ -67,10 +71,15 @@
       },
 
       onResponse: function(e, request) {
-        console.log("Got response!");
-        console.log(request.response);
-        this.data = request.response;
-        console.log(request.response);
+        if (request.succeeded && request.response.length) {
+          this.data = request.response;
+          this.$.grid.columns = Object.keys(request.response[0]).map(function(key) {
+            return {name: key};
+          });
+        } else {
+          this.$.grid.columns = [{name: 'entries'}];
+          this.$.grid.items = [{'entries': 'No ' + this.endpoint}];
+        }
       },
 
       _getEndPoint: function(endpoint) {
