@@ -2,8 +2,7 @@
 
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
-<link rel="import" href="../lancie-admin-login/lancie-ajax.html">
-
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 
 <dom-module id="lancie-admin-endpoint">
   <template>
@@ -32,10 +31,7 @@
       }
     </style>
 
-    <lancie-ajax auto
-      id="endpointAjax"
-      refurl="[[_getEndPoint(endpoint)]]"
-      on-response="onResponse">
+    <lancie-ajax auto id="endpointAjax" refurl="[[_getEndPoint(endpoint)]]" on-response="onResponse">
     </lancie-ajax>
 
     <paper-card heading="[[endpoint]]">
@@ -56,36 +52,48 @@
   </template>
 
   <script>
-  'use strict';
+    'use strict';
 
-  (function() {
-    Polymer({
-      is: 'lancie-admin-endpoint',
-      properties: {
-        endpoint: String,
-        data: Object,
-      },
+    (function () {
+      Polymer({
+        is: 'lancie-admin-endpoint',
+        properties: {
+          endpoint: String,
+          data: Object,
+        },
 
-      ready: function() {
-        this.$.endpointAjax.generateRequest();
-      },
+        ready: function () {
+          this.$.endpointAjax.generateRequest();
+        },
 
-      onResponse: function(e, request) {
-        if (request.succeeded && request.response.length) {
-          this.data = request.response;
-          this.$.grid.columns = Object.keys(request.response[0]).map(function(key) {
-            return {name: key};
-          });
-        } else {
-          this.$.grid.columns = [{name: 'entries'}];
-          this.$.grid.items = [{'entries': 'No ' + this.endpoint}];
-        }
-      },
+        onResponse: function (e, request) {
+          if (request.succeeded && request.response.length) {
+            console.log('response' + this.endpoint);
+            // Get columns
+            var keys = Object.keys(request.response[0]);
+            this.$.grid.columns = keys.map(function (key) {
+              return { name: key };
+            });
+            // Format data
+            this.data = request.response.map(function(item) {
+              var newItem = item;
+              keys.forEach(function(key) {
+                if (key === 'profile') {
+                  item[key] = item[key].displayName;
+                }
+              });
+              return item;
+            });
+          } else {
+            this.$.grid.columns = [{ name: 'entries' }];
+            this.$.grid.items = [{ 'entries': 'No ' + this.endpoint }];
+          }
+        },
 
-      _getEndPoint: function(endpoint) {
-        return endpoint.toLowerCase();
-      },
-    });
-  })();
+        _getEndPoint: function (endpoint) {
+          return endpoint.toLowerCase();
+        },
+      });
+    })();
   </script>
 </dom-module>
