@@ -52,6 +52,10 @@
       app-header {
         width: 100%;
       }
+
+      .logout {
+        border-top: 1px solid #e8e8e8;
+      }
     </style>
 
 
@@ -82,7 +86,7 @@
             <iron-icon icon="social:group" item-icon></iron-icon>
             <a href="/teams">Teams</a>
           </paper-icon-item>
-          <paper-icon-item on-tap="logout">
+          <paper-icon-item class="logout" on-tap="logout">
             <iron-icon icon="exit-to-app" item-icon></iron-icon>
             <a href="#">Logout</a>
           </paper-icon-item>
