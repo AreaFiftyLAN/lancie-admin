@@ -3,6 +3,8 @@
 <link rel="import" href="lancie-admin-layout/lancie-admin-layout.html">
 
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/lancie-login-card/lancie-login-card.html">
+<link rel="import" href="../bower_components/lancie-ajax/lancie-ajax.html">
 
 <dom-module id="lancie-admin-app">
   <template>
@@ -18,17 +20,64 @@
         @apply(--layout-flex);
       }
     </style>
-    <lancie-admin-layout class="layout vertical" route="{{route}}">
-      <lancie-admin-content page="{{route}}"></lancie-admin-content>
-    </lancie-admin-layout>
-  </template>
 
+    <template is="dom-if" if="[[loggedIn]]">
+      <lancie-admin-layout class="layout vertical" route="{{route}}">
+        <lancie-admin-content page="{{route}}"></lancie-admin-content>
+      </lancie-admin-layout>
+    </template>
+
+    <template is="dom-if" if="[[!loggedIn]]">
+      <lancie-login-card on-logged-in="storeLogin"></lancie-login-card>
+    </template>
+
+    <lancie-ajax id="ajax"></lancie-ajax>
+    <iron-ajax
+      id="getCurrentUser"
+      url="/api/v1/users/current"
+      on-response="onCurrentUser"></iron-ajax>
+
+  </template>
   <script>
   (function() {
     'use strict';
 
     Polymer({
       is: 'lancie-admin-app',
+      properties: {
+        user: Object,
+        token: String,
+        loggedIn: {
+          type: Boolean,
+          value: false,
+        },
+      },
+
+      attached: function() {
+        var token = window.sessionStorage.getItem('auth-token');
+        if (!!token && token !== '') {
+          this.token = token;
+          this.$.getCurrentUser.headers = {'X-Auth-Token': token};
+          this.$.getCurrentUser.generateRequest();
+        }
+      },
+
+      onCurrentUser: function(e, request) {
+        this.storeLogin(e, {user: request.response, token: this.token});
+      },
+
+      storeLogin: function(e, detail) {
+        if (detail.user.authorities.indexOf('ROLE_ADMIN') > -1) {
+          this.user = detail;
+          this.$.ajax.injectToken(detail.token);
+          window.sessionStorage.setItem('auth-token', detail.token);
+
+          this.loggedIn = true;
+        } else {
+          // TODO: Raplace with toast
+          alert('You are not an admin!');
+        }
+      },
     });
   })();
   </script>
