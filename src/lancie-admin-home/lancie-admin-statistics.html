@@ -1,0 +1,49 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="lancie-admin-information-item.html">
+
+<dom-module id="lancie-admin-statistics">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-item {
+        justify-content: space-between;
+      }
+    </style>
+
+    <iron-ajax auto
+      url="/api/v1/tickets/available"
+      on-response="onTickets"
+      on-error="onTickets"
+    ></iron-ajax>
+
+    <lancie-admin-information-item title="Tickets sold:" value="[[ticketsSold]]"></lancie-admin-information-item>
+
+  </template>
+  <script>
+  'use strict';
+
+  (function() {
+    Polymer({
+      is: 'lancie-admin-statistics',
+      properties: {
+        ticketsSold: String,
+      },
+
+      onTickets: function(e) {
+        if (e.detail.succeeded) {
+          this.ticketsSold = e.detail.response.reduce(function(count, type) {
+            return count + type.numberSold;
+          }, 0)
+        } else {
+          // TODO: Handle error with global toast event.
+          this.fire('toast', {text: 'Unable to retrieve tickets.'})
+        }
+      },
+    });
+  })();
+  </script>
+</dom-module>
