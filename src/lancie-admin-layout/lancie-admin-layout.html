@@ -82,6 +82,10 @@
             <iron-icon icon="social:group" item-icon></iron-icon>
             <a href="/teams">Teams</a>
           </paper-icon-item>
+          <paper-icon-item on-tap="logout">
+            <iron-icon icon="exit-to-app" item-icon></iron-icon>
+            <a href="#">Logout</a>
+          </paper-icon-item>
         </paper-menu>
       </app-drawer>
 
@@ -120,6 +124,11 @@
           this.$.drawerLayout.resetLayout();
           this.$.headerLayout.resetLayout();
         }, 250);
+      },
+
+      logout: function() {
+        window.sessionStorage.removeItem('auth-token');
+        location.reload();
       },
 
       _getTitle: function(route) {
