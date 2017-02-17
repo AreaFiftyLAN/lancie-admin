@@ -1,0 +1,33 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="lancie-admin-information-item">
+  <template>
+    <style>
+      :host {
+        display: block;
+        border-bottom: 1px solid #e8e8e8;
+      }
+
+      paper-item {
+        justify-content: space-between;
+      }
+    </style>
+
+    <paper-item>
+      <span>[[title]]</span>
+      <span>[[value]]</span>
+    </paper-item>
+
+  </template>
+  <script>
+  'use strict';
+
+  (function() {
+    Polymer({
+      is: 'lancie-admin-information-item',
+    });
+  })();
+  </script>
+</dom-module>
