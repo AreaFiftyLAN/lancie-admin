@@ -87,8 +87,7 @@
 
           this.loggedIn = true;
         } else {
-          // TODO: Raplace with toast
-          window.alert('You are not an admin!');
+          this.fire('toast', {text: 'You are not an admin!'});
         }
       },
 
