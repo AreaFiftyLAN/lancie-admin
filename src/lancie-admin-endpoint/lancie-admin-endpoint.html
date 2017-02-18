@@ -72,18 +72,12 @@
             // Get columns
             var keys = Object.keys(request.response[0]);
             this.$.grid.columns = keys.map(function (key) {
+              if (key === 'profile') {
+                return {name: 'profile.displayName'};
+              }
               return { name: key };
             });
-            // Format data
-            this.data = request.response.map(function(item) {
-              var newItem = item;
-              keys.forEach(function(key) {
-                if (key === 'profile') {
-                  item[key] = item[key].displayName;
-                }
-              });
-              return item;
-            });
+            this.data = request.response;
           } else {
             this.$.grid.columns = [{ name: 'entries' }];
             this.$.grid.items = [{ 'entries': 'No ' + this.endpoint }];
