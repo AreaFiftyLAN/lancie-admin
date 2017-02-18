@@ -39,12 +39,7 @@
         <p>Here is where the [[endpoint]] will be.</p>
         <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
 
-        <vaadin-grid id="grid" items="[[data]]">
-          <table>
-            <colgroup>
-            </colgroup>
-          </table>
-        </vaadin-grid>
+        <vaadin-grid id="grid"></vaadin-grid>
 
       </div>
     </paper-card>
@@ -59,7 +54,14 @@
         is: 'lancie-admin-endpoint',
         properties: {
           endpoint: String,
-          data: Object,
+          columnMappings: {
+            type: Object,
+            value: function() {
+              return {
+                profile: ['displayName', 'firstName', 'lastName'],
+              };
+            }
+          }
         },
 
         ready: function () {
@@ -71,13 +73,18 @@
             console.log('response' + this.endpoint);
             // Get columns
             var keys = Object.keys(request.response[0]);
-            this.$.grid.columns = keys.map(function (key) {
-              if (key === 'profile') {
-                return {name: 'profile.displayName'};
+            var columns = keys.map(function (key) {
+              if (!!this.columnMappings[key]) {
+                return this.columnMappings[key].map(function(item) {
+                  return {name: key + '.' + item};
+                });
               }
               return { name: key };
-            });
-            this.data = request.response;
+            }.bind(this));
+
+            // Flatten the columns and assign data
+            this.$.grid.columns = [].concat.apply([], columns);
+            this.$.grid.items = request.response;
           } else {
             this.$.grid.columns = [{ name: 'entries' }];
             this.$.grid.items = [{ 'entries': 'No ' + this.endpoint }];
