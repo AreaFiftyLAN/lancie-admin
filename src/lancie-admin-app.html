@@ -23,19 +23,19 @@
 
       .login-header {
         height: 64px;
-<<<<<<< da26b49fbbe8a9ff261ed605d636e2681e1094ff
         background-color: var(--primary-color);
       }
     </style>
 
     <paper-toast id="globalToast"></paper-toast>
 
-=======
-        background-color: #1a2b43;
-      }
-    </style>
+    <lancie-ajax id="ajax"></lancie-ajax>
+    <iron-ajax
+      id="getCurrentUser"
+      url="/api/v1/users/current"
+      on-response="onCurrentUser"
+      on-error="onCurrentUser"></iron-ajax>
 
->>>>>>> Improve login functionality
     <template is="dom-if" if="[[_grant(loggedIn, loaded)]]">
       <lancie-admin-layout class="layout vertical" route="{{route}}">
         <lancie-admin-content page="{{route}}"></lancie-admin-content>
@@ -46,13 +46,6 @@
       <div class="login-header"></div>
       <lancie-login-card on-logged-in="storeLogin"></lancie-login-card>
     </template>
-
-    <lancie-ajax id="ajax"></lancie-ajax>
-    <iron-ajax
-      id="getCurrentUser"
-      url="/api/v1/users/current"
-      on-response="onCurrentUser"
-      on-error="onCurrentUser"></iron-ajax>
 
   </template>
   <script>
@@ -72,16 +65,6 @@
           type: Boolean,
           value: false,
         },
-<<<<<<< da26b49fbbe8a9ff261ed605d636e2681e1094ff
-      },
-
-      ready: function () {
-        // Catch global toast events
-        this.addEventListener('toast', function(e) {
-          this.showToast(e.detail);
-        }.bind(this));
-=======
->>>>>>> Improve login functionality
       },
 
       attached: function() {
@@ -93,6 +76,11 @@
         } else {
           this.loaded = true;
         }
+
+        // Catch global toast events
+        this.addEventListener('toast', function(e) {
+          this.showToast(e.detail);
+        }.bind(this));
       },
 
       onCurrentUser: function(e, request) {
