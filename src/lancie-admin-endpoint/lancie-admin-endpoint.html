@@ -4,6 +4,8 @@
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 
+<link rel="import" href="../lancie-admin-table/lancie-admin-table.html">
+
 <dom-module id="lancie-admin-endpoint">
   <template>
     <style>
@@ -16,13 +18,6 @@
         margin: 16px;
       }
 
-      vaadin-grid {
-        --primary-color: #ffe574;
-        --vaadin-grid-row-stripe-cell: {
-          background-color: #FBFBFB;
-        }
-      }
-
       @media(max-width: 640px) {
         paper-card {
           width: 100%;
@@ -31,7 +26,7 @@
       }
     </style>
 
-    <lancie-ajax auto id="endpointAjax" refurl="[[_getEndPoint(endpoint)]]" on-lancie-ajax="onResponse">
+    <lancie-ajax id="endpointAjax" refurl="[[_getEndPoint(endpoint)]]" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
     <paper-card heading="[[endpoint]]">
@@ -39,13 +34,11 @@
         <p>Here is where the [[endpoint]] will be.</p>
         <p>Requests will be on /api/v1/[[_getEndPoint(endpoint)]]</p>
 
-        <vaadin-grid id="grid"></vaadin-grid>
-
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
     </paper-card>
 
   </template>
-
   <script>
     'use strict';
 
@@ -54,42 +47,53 @@
         is: 'lancie-admin-endpoint',
         properties: {
           endpoint: String,
-          columnMappings: {
+          data: Object,
+          mappings: {
             type: Object,
             value: function() {
               return {
-                profile: ['displayName', 'firstName', 'lastName'],
-                user: ['username']
+                profile: ['displayName'],
+                user: ['username'],
+                owner: ['username'],
+                type: ['name'],
+                captain: ['username', 'profile.displayName'],
+              };
+            }
+          },
+          renderers: {
+            type: Object,
+            value: function() {
+              return {
+                tickets: function(cell) {
+                  var text = cell.data.reduce(function(text, t) {
+                    return text + t.id + ', ';
+                  }, '');
+                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                },
+                enabledOptions: function(cell) {
+                  var text = cell.data.reduce(function(text, o){
+                    return text + o.name + ', '
+                  }, '');
+                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                },
+                members: function(cell) {
+                  var text = cell.data.reduce(function(text, m){
+                    return text + m.username + ', '
+                  }, '');
+                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                },
               };
             }
           }
         },
 
-        ready: function () {
+        attached: function() {
           this.$.endpointAjax.generateRequest();
         },
 
         onResponse: function (e, request) {
-          if (request.succeeded && request.response.length) {
-            console.log('response' + this.endpoint);
-            // Get columns
-            var keys = Object.keys(request.response[0]);
-            console.log(keys);
-            var columns = keys.map(function (key) {
-              if (!!this.columnMappings[key]) {
-                return this.columnMappings[key].map(function(item) {
-                  return {name: key + '.' + item};
-                });
-              }
-              return { name: key };
-            }.bind(this));
-
-            // Flatten the columns and assign data
-            this.$.grid.columns = [].concat.apply([], columns);
-            this.$.grid.items = request.response;
-          } else {
-            this.$.grid.columns = [{ name: 'entries' }];
-            this.$.grid.items = [{ 'entries': 'No ' + this.endpoint }];
+          if (request.succeeded) {
+            this.$.table.setData(request.response);
           }
         },
 
