@@ -52,13 +52,17 @@
       app-header {
         width: 100%;
       }
+
+      .logout {
+        border-top: 1px solid #e8e8e8;
+      }
     </style>
 
 
     <app-drawer-layout id="drawerLayout" fullbleed>
       <app-drawer>
         <app-toolbar>
-          <iron-image preload fade sizing="contain" position="left" src="../../images-optimized/logo_without_date.png"></iron-image>
+          <iron-image preload fade sizing="contain" position="left" src="../../images-optimized/lancie/logo_without_date.png"></iron-image>
         </app-toolbar>
 
         <paper-menu selected="{{route.page}}" attr-for-selected="data-route">
@@ -81,6 +85,10 @@
           <paper-icon-item data-route="teams">
             <iron-icon icon="social:group" item-icon></iron-icon>
             <a href="/teams">Teams</a>
+          </paper-icon-item>
+          <paper-icon-item class="logout" on-tap="logout">
+            <iron-icon icon="exit-to-app" item-icon></iron-icon>
+            <a href="#">Logout</a>
           </paper-icon-item>
         </paper-menu>
       </app-drawer>
@@ -120,6 +128,11 @@
           this.$.drawerLayout.resetLayout();
           this.$.headerLayout.resetLayout();
         }, 250);
+      },
+
+      logout: function() {
+        window.localStorage.removeItem('a5lauth');
+        location.reload();
       },
 
       _getTitle: function(route) {

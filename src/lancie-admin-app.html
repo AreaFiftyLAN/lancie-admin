@@ -3,6 +3,9 @@
 <link rel="import" href="lancie-admin-layout/lancie-admin-layout.html">
 
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/lancie-login-card/lancie-login-card.html">
+<link rel="import" href="../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <dom-module id="lancie-admin-app">
   <template>
@@ -17,18 +20,108 @@
       lancie-content {
         @apply(--layout-flex);
       }
-    </style>
-    <lancie-admin-layout class="layout vertical" route="{{route}}">
-      <lancie-admin-content page="{{route}}"></lancie-admin-content>
-    </lancie-admin-layout>
-  </template>
 
+      .login-header {
+        height: 64px;
+        background-color: var(--primary-color);
+      }
+    </style>
+
+    <paper-toast id="globalToast"></paper-toast>
+
+    <template is="dom-if" if="[[_grant(loggedIn, loaded)]]">
+      <lancie-admin-layout class="layout vertical" route="{{route}}">
+        <lancie-admin-content page="{{route}}"></lancie-admin-content>
+      </lancie-admin-layout>
+    </template>
+
+    <template is="dom-if" if="[[_login(loggedIn, loaded)]]">
+      <div class="login-header"></div>
+      <lancie-login-card on-logged-in="storeLogin"></lancie-login-card>
+    </template>
+
+    <lancie-ajax id="ajax"></lancie-ajax>
+    <iron-ajax
+      id="getCurrentUser"
+      url="/api/v1/users/current"
+      on-response="onCurrentUser"
+      on-error="onCurrentUser"></iron-ajax>
+
+  </template>
   <script>
   (function() {
     'use strict';
 
     Polymer({
       is: 'lancie-admin-app',
+      properties: {
+        user: Object,
+        token: String,
+        loggedIn: {
+          type: Boolean,
+          value: false,
+        },
+        loaded: {
+          type: Boolean,
+          value: false,
+        },
+      },
+
+      ready: function () {
+        // Catch global toast events
+        this.addEventListener('toast', function(e) {
+          this.showToast(e.detail);
+        }.bind(this));
+      },
+
+      attached: function() {
+        var token = window.localStorage.getItem('a5lauth');
+        if (!!token) {
+          this.token = token;
+          this.$.getCurrentUser.headers = {'X-Auth-Token': token};
+          this.$.getCurrentUser.generateRequest();
+        } else {
+          this.loaded = true;
+        }
+      },
+
+      onCurrentUser: function(e, request) {
+        this.loaded = true;
+        if (request.succeeded) {
+          this.storeLogin(e, {user: request.response, token: this.token});
+        }
+      },
+
+      storeLogin: function(e, detail) {
+        if (detail.user.authorities.indexOf('ROLE_ADMIN') > -1) {
+          this.user = detail;
+          this.$.ajax.injectToken(detail.token);
+          window.localStorage.setItem('a5lauth', detail.token);
+
+          this.loggedIn = true;
+        } else {
+          this.fire('toast', {text: 'You\'re not allowed to view this page.'});
+        }
+      },
+
+      showToast: function(properties) {
+        if (this.$.globalToast.opened) {
+          this.$.globalToast.close();
+          this.async(function() {
+            this.$.globalToast.show(properties);
+          }, 100);
+        } else {
+          this.$.globalToast.show(properties);
+        }
+      },
+
+      _grant: function(loggedIn, loaded) {
+        return loaded && loggedIn;
+      },
+
+      _login: function(loggedIn, loaded) {
+        return loaded && !loggedIn;
+      },
     });
   })();
   </script>
