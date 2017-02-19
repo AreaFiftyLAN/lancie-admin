@@ -41,7 +41,8 @@
     <iron-ajax
       id="getCurrentUser"
       url="/api/v1/users/current"
-      on-response="onCurrentUser"></iron-ajax>
+      on-response="onCurrentUser"
+      on-error="onCurrentUser"></iron-ajax>
 
   </template>
   <script>
@@ -75,8 +76,10 @@
       },
 
       onCurrentUser: function(e, request) {
-        this.storeLogin(e, {user: request.response, token: this.token});
         this.loaded = true;
+        if (request.succeeded) {
+          this.storeLogin(e, {user: request.response, token: this.token});
+        }
       },
 
       storeLogin: function(e, detail) {
