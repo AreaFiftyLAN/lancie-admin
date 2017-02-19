@@ -19,7 +19,6 @@
     <app-location route="{{route}}"></app-location>
     <app-route route="{{route}}" pattern="/:page" data="{{page}}"></app-route>
 
-    <paper-toast id="globalToast"></paper-toast>
 
     <iron-lazy-pages attr-for-selected="data-route" selected="[[page.page]]" fallback-selection="404">
 
@@ -50,28 +49,6 @@
           notify: true
         }
       },
-
-      ready: function () {
-        // Catch global toast events
-        this.addEventListener('toast', function(e) {
-          this.showToast(e.detail);
-        }.bind(this));
-
-        // Since the paper-dialogs are put here, the toast has to be moved here. If this is not done, the toasts will appear behind the backdrop.
-        window.document.body.appendChild(this.$.globalToast);
-      },
-
-      showToast: function(properties) {
-        if (this.$.globalToast.opened) {
-          this.$.globalToast.close();
-          this.async(function() {
-            this.$.globalToast.show(properties);
-          }, 100);
-        } else {
-          this.$.globalToast.show(properties);
-        }
-      },
-
     });
   })();
   </script>
