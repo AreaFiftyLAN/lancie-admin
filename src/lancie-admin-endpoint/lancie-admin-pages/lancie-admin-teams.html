@@ -1,0 +1,65 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+
+<dom-module id="lancie-admin-teams">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-ajax auto id="endpointAjax" refurl="teams" on-lancie-ajax="onResponse">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="teams">
+      <p>Here is where the teams will be.</p>
+      <p>Requests will be on /api/v1/teams</p>
+
+      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+    </lancie-admin-page-layout>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function () {
+      Polymer({
+        is: 'lancie-admin-teams',
+        properties: {
+          data: Object,
+          mappings: {
+            type: Object,
+            value: function() {
+              return {
+                captain: ['username', 'profile.displayName'],
+              };
+            }
+          },
+          renderers: {
+            type: Object,
+            value: function() {
+              return {
+                members: function(cell) {
+                  var text = cell.data.reduce(function(text, m){
+                    return text + m.username + ', '
+                  }, '');
+                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                },
+              };
+            }
+          }
+        },
+
+        onResponse: function (e, request) {
+          if (request.succeeded) {
+            this.$.table.setData(request.response);
+          }
+        },
+      });
+    })();
+  </script>
+</dom-module>

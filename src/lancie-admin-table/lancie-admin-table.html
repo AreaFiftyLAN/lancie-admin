@@ -1,6 +1,4 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
-
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
 
 <dom-module id="lancie-admin-table">
@@ -15,7 +13,7 @@
       }
 
       vaadin-grid {
-        --primary-color: #ffe574;
+        --primary-color: var(--secondary-color);
         --vaadin-grid-row-stripe-cell: {
           background-color: #FBFBFB;
         }
@@ -81,6 +79,7 @@
             this.$.noData.hidden = false;
           }
         },
+
      });
     })();
   </script>
