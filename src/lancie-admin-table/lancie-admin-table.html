@@ -40,6 +40,15 @@
           columnRenderers: Object,
         },
 
+        /*
+          Sets that data after pre-processing data that is not
+          readily displayable.
+          If any mappings exist from an object to one or more
+          properties, these are resolved and added in the columns,
+          For more extensible processing of data, renderers can be
+          used for a column. The renderer is able to attach custom
+          HTML to the cell.
+        */
         setData: function (data) {
           if (data.length) {
             // Get columns
@@ -61,6 +70,11 @@
             // Flatten the columns
             columns = [].concat.apply([], columns);
 
+            /*
+              Make all columns sortable, hidable and resizable.
+              If there is a renderer for a column, the renderer is
+              attached here.
+            */
             columns = columns.map(function(col) {
               if (!!this.columnRenderers[col.name]) {
                 col.renderer = this.columnRenderers[col.name];
