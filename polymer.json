@@ -6,7 +6,10 @@
   ],
   "fragments": [
     "src/lancie-admin-home/lancie-admin-home.html",
-    "src/lancie-admin-endpoint/lancie-admin-endpoint.html",
+    "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-orders.html",
+    "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-teams.html",
+    "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-tickets.html",
+    "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-users.html",
     "src/lancie-admin-404.html"
   ],
   "extraDependencies": [
