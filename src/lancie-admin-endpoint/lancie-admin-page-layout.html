@@ -1,0 +1,44 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<dom-module id="lancie-admin-page-layout">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      @media(max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    </style>
+
+    <paper-card heading="[[endpoint]]">
+      <div class="card-content">
+        <content></content>
+      </div>
+    </paper-card>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function () {
+      Polymer({
+        is: 'lancie-admin-page-layout',
+        properties: {
+          endpoint: String,
+        },
+      });
+    })();
+  </script>
+</dom-module>

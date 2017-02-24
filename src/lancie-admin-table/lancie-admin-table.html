@@ -1,0 +1,100 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+
+<dom-module id="lancie-admin-table">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      vaadin-grid {
+        --primary-color: var(--secondary-color);
+        --vaadin-grid-row-stripe-cell: {
+          background-color: #FBFBFB;
+        }
+      }
+    </style>
+
+    <p id="noData" hidden>No data found!</p>
+
+    <vaadin-grid id="grid"
+      items="[[data]]"
+      hidden
+    ></vaadin-grid>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function () {
+      Polymer({
+        is: 'lancie-admin-table',
+        properties: {
+          data: Object,
+          columnMappings: Object,
+          columnRenderers: Object,
+        },
+
+        /*
+          Sets that data after pre-processing data that is not
+          readily displayable.
+          If any mappings exist from an object to one or more
+          properties, these are resolved and added in the columns,
+          For more extensible processing of data, renderers can be
+          used for a column. The renderer is able to attach custom
+          HTML to the cell.
+        */
+        setData: function (data) {
+          if (data.length) {
+            // Get columns
+            var keys = Object.keys(data[0]);
+            var columns = keys.map(function (key) {
+              // If a mapping exists, resolve it
+              if (!!this.columnMappings[key]) {
+                return this.columnMappings[key].map(function(item) {
+                  return {
+                    name: key + '.' + item,
+                  };
+                });
+              }
+              return {
+                name: key,
+              };
+            }.bind(this));
+
+            // Flatten the columns
+            columns = [].concat.apply([], columns);
+
+            /*
+              Make all columns sortable, hidable and resizable.
+              If there is a renderer for a column, the renderer is
+              attached here.
+            */
+            columns = columns.map(function(col) {
+              if (!!this.columnRenderers[col.name]) {
+                col.renderer = this.columnRenderers[col.name];
+              }
+              col.sortable = true;
+              col.hidable = true;
+              col.resizable = true;
+              return col;
+            }.bind(this));
+
+            // Flatten the columns and assign data
+            this.$.grid.columns = columns;
+            this.data = data;
+            this.$.grid.hidden = false;
+          } else {
+            this.$.noData.hidden = false;
+          }
+        },
+
+     });
+    })();
+  </script>
+</dom-module>

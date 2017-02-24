@@ -13,7 +13,8 @@
     "app-route": "polymerelements/app-route#^0.9.2",
     "iron-lazy-pages": "TimvdLippe/iron-lazy-pages#2.0-preview",
     "lancie-login-card": "AreaFiftyLAN/lancie-login-card#1.0.0",
-    "lancie-ajax": "AreaFiftyLAN/lancie-ajax#1.0.0"
+    "lancie-ajax": "AreaFiftyLAN/lancie-ajax#1.0.1",
+    "vaadin-grid": "^1.2.1"
   },
   "devDependencies": {
     "web-component-tester": "*",

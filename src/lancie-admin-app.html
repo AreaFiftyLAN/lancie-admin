@@ -29,6 +29,13 @@
 
     <paper-toast id="globalToast"></paper-toast>
 
+    <lancie-ajax id="ajax"></lancie-ajax>
+    <iron-ajax
+      id="getCurrentUser"
+      url="/api/v1/users/current"
+      on-response="onCurrentUser"
+      on-error="onCurrentUser"></iron-ajax>
+
     <template is="dom-if" if="[[_grant(loggedIn, loaded)]]">
       <lancie-admin-layout class="layout vertical" route="{{route}}">
         <lancie-admin-content page="{{route}}"></lancie-admin-content>
@@ -39,13 +46,6 @@
       <div class="login-header"></div>
       <lancie-login-card on-logged-in="storeLogin"></lancie-login-card>
     </template>
-
-    <lancie-ajax id="ajax"></lancie-ajax>
-    <iron-ajax
-      id="getCurrentUser"
-      url="/api/v1/users/current"
-      on-response="onCurrentUser"
-      on-error="onCurrentUser"></iron-ajax>
 
   </template>
   <script>
@@ -67,13 +67,6 @@
         },
       },
 
-      ready: function () {
-        // Catch global toast events
-        this.addEventListener('toast', function(e) {
-          this.showToast(e.detail);
-        }.bind(this));
-      },
-
       attached: function() {
         var token = window.localStorage.getItem('a5lauth');
         if (!!token) {
@@ -83,6 +76,11 @@
         } else {
           this.loaded = true;
         }
+
+        // Catch global toast events
+        this.addEventListener('toast', function(e) {
+          this.showToast(e.detail);
+        }.bind(this));
       },
 
       onCurrentUser: function(e, request) {
