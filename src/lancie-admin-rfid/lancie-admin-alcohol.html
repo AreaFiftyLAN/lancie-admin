@@ -45,7 +45,7 @@
     <lancie-admin-page-layout endpoint="Alcohol Check">
       <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
-      <div class="result {{color}}"></div>
+      <div class$="result {{color}}"></div>
     </lancie-admin-page-layout>
   </template>
   <script>
@@ -68,9 +68,13 @@
           },
           color: {
             type: String,
-            computed: 'computeColor(overage, underage)'
+            value: 'blue',
           },
         },
+
+        observers: [
+          'computeColor(overage, underage)',
+        ],
 
         _requestUser: function (e) {
             if (e.keyCode === 13) {
@@ -103,13 +107,13 @@
 
         computeColor: function (overage, underage) {
             if (!overage && !underage) {
-                return 'blue';
+              this.color = 'blue';
             }
             if (overage && !underage) {
-                return 'green';
+              this.color = 'green';
             }
             if (!overage && underage) {
-                return 'red';
+              this.color = 'red';
             }
         }
       });
