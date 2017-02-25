@@ -13,6 +13,7 @@
     "src/lancie-admin-rfid/lancie-admin-rfid-assign.html",
     "src/lancie-admin-rfid/lancie-admin-rfid-alcohol.html",
     "src/lancie-admin-rfid/lancie-admin-rfid-ticket.html",
+    "src/lancie-admin-rfid/lancie-admin-rfid-consumption.html",
     "src/lancie-admin-404.html"
   ],
   "extraDependencies": [
