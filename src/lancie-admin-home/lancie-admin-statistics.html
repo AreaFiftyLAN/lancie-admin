@@ -24,9 +24,9 @@
 
   </template>
   <script>
-  'use strict';
-
   (function() {
+    'use strict';
+
     Polymer({
       is: 'lancie-admin-statistics',
       properties: {
@@ -37,10 +37,10 @@
         if (e.detail.succeeded) {
           this.ticketsSold = e.detail.response.reduce(function(count, type) {
             return count + type.numberSold;
-          }, 0)
+          }, 0);
         } else {
           // TODO: Handle error with global toast event.
-          this.fire('toast', {text: 'Unable to retrieve tickets.'})
+          this.fire('toast', {text: 'Unable to retrieve tickets.'});
         }
       },
     });

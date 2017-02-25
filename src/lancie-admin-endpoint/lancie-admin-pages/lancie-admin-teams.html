@@ -24,9 +24,9 @@
 
   </template>
   <script>
-    'use strict';
-
     (function () {
+      'use strict';
+
       Polymer({
         is: 'lancie-admin-teams',
         properties: {
@@ -45,7 +45,7 @@
               return {
                 members: function(cell) {
                   var text = cell.data.reduce(function(text, m){
-                    return text + m.username + ', '
+                    return text + m.username + ', ';
                   }, '');
                   cell.element.innerHTML = text.substr(0, text.length - 2);
                 },
