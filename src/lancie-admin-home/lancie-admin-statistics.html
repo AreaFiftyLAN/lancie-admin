@@ -18,8 +18,8 @@
 
     <lancie-admin-information-item title="Total tickets sold" value="[[totalSold]]"></lancie-admin-information-item>
 
-    <template is="dom-repeat" items="[[ticketsSold]]">
-      <lancie-admin-information-item title="[[item.type]]" value="[[item.sold]]"></lancie-admin-information-item>
+    <template is="dom-repeat" items="[[data]]">
+      <lancie-admin-information-item title="[[item.key]]" value="[[item.value]]"></lancie-admin-information-item>
     </template>
 
   </template>
@@ -31,7 +31,7 @@
       is: 'lancie-admin-statistics',
       properties: {
         totalSold: String,
-        ticketsSold: {
+        data: {
           type: Array,
           value: function() {
             return [];
@@ -41,28 +41,39 @@
 
       onTickets: function(e, request) {
         if (request.succeeded) {
-          this.calculateTicketsPerType(request.response);
+          this.calculateTicketsOnProperty(request.response);
           this.totalSold = request.response.filter(function(t) {return t.valid;}).length;
         } else {
           this.fire('toast', {text: 'Unable to retrieve tickets.'})
         }
       },
 
-      calculateTicketsPerType: function(tickets) {
-        var sold = tickets.reduce(function(buckets, t) {
+      calculateTicketsOnProperty: function(tickets) {
+        var buckets = tickets.reduce(function(buckets, t) {
           if (!t.valid) return buckets;
-          if (!buckets[t.type.text]) {
-            buckets[t.type.text] = 1;
-          } else {
-            buckets[t.type.text] = buckets[t.type.text] + 1;
-          }
+
+          // Increment buckets for the type and options for the ticket
+          buckets = this._incrementBucket(buckets, t.type.text);
+          buckets = t.enabledOptions.reduce(function(buckets, o){
+            return this._incrementBucket(buckets, o.name);
+          }.bind(this), buckets);
           return buckets;
-        }, {});
-        var ticketsSold = [];
-        for (var type in sold) {
-          ticketsSold.push({type: type, sold: sold[type]});
+        }.bind(this), {});
+
+        var data = [];
+        for (var key in buckets) {
+          data.push({key: key, value: buckets[key]});
         }
-        this.ticketsSold = ticketsSold;
+        this.data = data;
+      },
+
+      _incrementBucket: function(bucket, property) {
+        if (!bucket[property]) {
+          bucket[property] = 1;
+        } else {
+          bucket[property]++;
+        }
+        return bucket;
       },
     });
   })();
