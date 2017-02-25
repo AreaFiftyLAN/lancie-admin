@@ -24,9 +24,9 @@
 
   </template>
   <script>
-    'use strict';
-
     (function () {
+      'use strict';
+
       Polymer({
         is: 'lancie-admin-tickets',
         properties: {
@@ -46,7 +46,7 @@
               return {
                 enabledOptions: function(cell) {
                   var text = cell.data.reduce(function(text, o){
-                    return text + o.name + ', '
+                    return text + o.name + ', ';
                   }, '');
                   cell.element.innerHTML = text.substr(0, text.length - 2);
                 },
