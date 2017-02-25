@@ -1,0 +1,60 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+
+<dom-module id="lancie-admin-alcohol">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-ajax
+      id="ticketIdAjax"
+      refurl="rfid/[[rfid]]/ticketId"
+      on-lancie-ajax="onTicketId"
+    ></lancie-ajax>
+
+    <lancie-ajax
+      id="alcoholAjax"
+      refurl="users/[[userId]]/alcoholcheck"
+      on-lancie-ajax="onAlcoholCheck">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Alcohol Check">
+      <p>Bier is lekker.</p>
+      <paper-input>
+        hier hidden meuk met een on-enter="fireTicketIdAjax"
+      </paper-input>
+
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    'use strict';
+
+    (function () {
+      Polymer({
+        is: 'lancie-admin-alcohol',
+        properties: {
+          ticketId: String,
+          userId: String,
+          rfid: String,
+        },
+
+        fireTicketIdAjax: function (e) {
+          hier wordt 'rfid' geset;
+          this.$.ticketIdAjax.generateRequest();
+        },
+
+        onTicketId: function (e, request) {
+          if (request.succeeded) {
+            this.ticketId = request.response;
+            this.$.alcoholAjax.generateRequest();
+          }
+        },
+      });
+    })();
+  </script>
+</dom-module>
