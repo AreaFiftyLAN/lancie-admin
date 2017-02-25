@@ -1,5 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="lancie-admin-information-item.html">
 
 <dom-module id="lancie-admin-statistics">
@@ -14,13 +14,13 @@
       }
     </style>
 
-    <iron-ajax auto
-      url="/api/v1/tickets/available"
-      on-response="onTickets"
-      on-error="onTickets"
-    ></iron-ajax>
+    <lancie-ajax auto refurl="tickets" on-lancie-ajax="onTickets"></lancie-ajax>
 
-    <lancie-admin-information-item title="Tickets sold:" value="[[ticketsSold]]"></lancie-admin-information-item>
+    <lancie-admin-information-item title="Total tickets sold" value="[[totalSold]]"></lancie-admin-information-item>
+
+    <template is="dom-repeat" items="[[ticketsSold]]">
+      <lancie-admin-information-item title="[[item.type]]" value="[[item.sold]]"></lancie-admin-information-item>
+    </template>
 
   </template>
   <script>
@@ -30,18 +30,39 @@
     Polymer({
       is: 'lancie-admin-statistics',
       properties: {
-        ticketsSold: String,
+        totalSold: String,
+        ticketsSold: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+        },
       },
 
-      onTickets: function(e) {
-        if (e.detail.succeeded) {
-          this.ticketsSold = e.detail.response.reduce(function(count, type) {
-            return count + type.numberSold;
-          }, 0)
+      onTickets: function(e, request) {
+        if (request.succeeded) {
+          this.calculateTicketsPerType(request.response);
+          this.totalSold = request.response.filter(function(t) {return t.valid;}).length;
         } else {
-          // TODO: Handle error with global toast event.
           this.fire('toast', {text: 'Unable to retrieve tickets.'})
         }
+      },
+
+      calculateTicketsPerType: function(tickets) {
+        var sold = tickets.reduce(function(buckets, t) {
+          if (!t.valid) return buckets;
+          if (!buckets[t.type.text]) {
+            buckets[t.type.text] = 1;
+          } else {
+            buckets[t.type.text] = buckets[t.type.text] + 1;
+          }
+          return buckets;
+        }, {});
+        var ticketsSold = [];
+        for (var type in sold) {
+          ticketsSold.push({type: type, sold: sold[type]});
+        }
+        this.ticketsSold = ticketsSold;
       },
     });
   })();
