@@ -12,9 +12,9 @@
     </style>
 
     <lancie-ajax
-      id="ticketIdAjax"
-      refurl="rfid/[[rfid]]/ticketId"
-      on-lancie-ajax="onTicketId"
+      id="userIdAjax"
+      refurl="rfid/[[rfid]]/userId"
+      on-lancie-ajax="onUserId"
     ></lancie-ajax>
 
     <lancie-ajax
@@ -25,9 +25,7 @@
 
     <lancie-admin-page-layout endpoint="Alcohol Check">
       <p>Bier is lekker.</p>
-      <paper-input>
-        hier hidden meuk met een on-enter="fireTicketIdAjax"
-      </paper-input>
+      <paper-input id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
 
     </lancie-admin-page-layout>
   </template>
@@ -38,21 +36,31 @@
       Polymer({
         is: 'lancie-admin-alcohol',
         properties: {
-          ticketId: String,
           userId: String,
           rfid: String,
         },
 
-        fireTicketIdAjax: function (e) {
-          hier wordt 'rfid' geset;
-          this.$.ticketIdAjax.generateRequest();
+        _requestUser: function (e) {
+            if (e.keyCode === 13) {
+                this.$.userIdAjax.generateRequest();
+            }
         },
 
-        onTicketId: function (e, request) {
+        onUserId: function (e, request) {
           if (request.succeeded) {
-            this.ticketId = request.response;
+            this.userId = request.response;
             this.$.alcoholAjax.generateRequest();
+          } else {
+            this.fire('toast', {text: 'Could not retrieve user.'});
           }
+        },
+
+        onAlcoholCheck: function(e, request) {
+            if (request.succeeded) {
+                request.response.object
+            } else {
+              this.fire('toast', {text: 'Could not check age.'});
+            }
         },
       });
     })();
