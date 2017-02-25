@@ -1,0 +1,122 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+
+<dom-module id="lancie-admin-rfid-ticket">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .result {
+        width: 200px;
+        height: 200px;
+        border-radius: 25px;
+        border: 5px solid #EEECEC;
+      }
+
+      .red {
+        background-color: #F44336;
+      }
+
+      .blue {
+        background-color: #2196F3;
+      }
+
+      .green {
+        background-color: #4CAF50;
+      }
+    </style>
+
+    <lancie-ajax
+      id="userIdAjax"
+      refurl="rfid/[[rfid]]/userId"
+      on-lancie-ajax="onUserId"
+    ></lancie-ajax>
+
+    <lancie-ajax
+      id="alcoholAjax"
+      refurl="users/[[userId]]/alcoholcheck"
+      on-lancie-ajax="onAlcoholCheck">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Alcohol Check">
+      <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
+      <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
+      <div class$="result {{color}}"></div>
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    'use strict';
+
+    (function () {
+      Polymer({
+        is: 'lancie-admin-rfid-ticket',
+        properties: {
+          userId: String,
+          rfid: String,
+
+          overage: {
+            type: Boolean,
+            value: false,
+          },
+          underage: {
+            type: Boolean,
+            value: false,
+          },
+          color: {
+            type: String,
+            value: 'blue',
+          },
+        },
+
+        observers: [
+          'computeColor(overage, underage)',
+        ],
+
+        _requestUser: function (e) {
+            if (e.keyCode === 13) {
+                this.$.userIdAjax.generateRequest();
+            }
+        },
+
+        onUserId: function (e, request) {
+          if (request.succeeded) {
+            this.userId = request.response;
+            this.$.alcoholAjax.generateRequest();
+          } else {
+            this.fire('toast', {text: 'Could not retrieve user.'});
+          }
+        },
+
+        onAlcoholCheck: function(e, request) {
+            if (request.succeeded) {
+                if (request.response.object === true) {
+                    this.overage = true;
+                    this.underage = false;
+                } else {
+                    this.overage = false;
+                    this.underage = true;
+                }
+            } else {
+              this.fire('toast', {text: 'Could not check age.'});
+            }
+        },
+
+        computeColor: function (overage, underage) {
+            if (!overage && !underage) {
+              this.color = 'blue';
+            }
+            if (overage && !underage) {
+              this.color = 'green';
+            }
+            if (!overage && underage) {
+              this.color = 'red';
+            }
+        }
+      });
+    })();
+  </script>
+</dom-module>
