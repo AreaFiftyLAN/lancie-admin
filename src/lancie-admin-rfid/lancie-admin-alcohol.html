@@ -9,6 +9,25 @@
       :host {
         display: block;
       }
+
+      .result {
+        width: 200px;
+        height: 200px;
+        border-radius: 25px;
+        border: 5px solid #EEECEC;
+      }
+
+      .red {
+        background-color: #F44336;
+      }
+
+      .blue {
+        background-color: #2196F3;
+      }
+
+      .green {
+        background-color: #4CAF50;
+      }
     </style>
 
     <lancie-ajax
@@ -24,9 +43,9 @@
     </lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Alcohol Check">
-      <p>Bier is lekker.</p>
-      <paper-input id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
-
+      <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
+      <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
+      <div class="result {{color}}"></div>
     </lancie-admin-page-layout>
   </template>
   <script>
@@ -38,6 +57,19 @@
         properties: {
           userId: String,
           rfid: String,
+
+          overage: {
+            type: Boolean,
+            value: false,
+          },
+          underage: {
+            type: Boolean,
+            value: false,
+          },
+          color: {
+            type: String,
+            computed: 'computeColor(overage, underage)'
+          },
         },
 
         _requestUser: function (e) {
@@ -57,11 +89,29 @@
 
         onAlcoholCheck: function(e, request) {
             if (request.succeeded) {
-                request.response.object
+                if (request.response.object === true) {
+                    this.overage = true;
+                    this.underage = false;
+                } else {
+                    this.overage = false;
+                    this.underage = true;
+                }
             } else {
               this.fire('toast', {text: 'Could not check age.'});
             }
         },
+
+        computeColor: function (overage, underage) {
+            if (!overage && !underage) {
+                return 'blue';
+            }
+            if (overage && !underage) {
+                return 'green';
+            }
+            if (!overage && underage) {
+                return 'red';
+            }
+        }
       });
     })();
   </script>
