@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <dom-module id="lancie-admin-table">
   <template>
@@ -20,10 +21,12 @@
       }
     </style>
 
+    <paper-input value="{{filterString}}" type="search"></paper-input>
+
     <p id="noData" hidden>No data found!</p>
 
     <vaadin-grid id="grid"
-      items="[[data]]"
+      items="[[_filter(data, filterString)]]"
       hidden
     ></vaadin-grid>
 
@@ -38,6 +41,7 @@
           data: Object,
           columnMappings: Object,
           columnRenderers: Object,
+          filterString: String,
         },
 
         /*
@@ -94,6 +98,25 @@
           }
         },
 
+        _filter: function(data, filterString) {
+          if (!filterString) return data;
+          var result = data.filter(function(entry) {
+            return this._check(entry, filterString)
+          }.bind(this));
+          return result;
+        },
+
+        _check: function(object, filterString) {
+          for (var item in object) {
+            if (!object[item]) continue;
+            if (typeof object[item] === 'object' && this._check(object[item], filterString)) {
+              return true;
+            } else if (object[item].toString().indexOf(filterString) !== -1) {
+              return true;
+            }
+          }
+          return false;
+        }
      });
     })();
   </script>
