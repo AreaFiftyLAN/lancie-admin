@@ -14,7 +14,8 @@
         width: 200px;
         height: 200px;
         border-radius: 25px;
-        border: 5px solid #EEECEC;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        transition: background-color 0.5s ease;
       }
 
       .red {
@@ -37,13 +38,14 @@
     ></lancie-ajax>
 
     <lancie-ajax
-      id="alcoholAjax"
-      refurl="users/[[userId]]/alcoholcheck"
-      on-lancie-ajax="onAlcoholCheck">
+      auto
+      id="allTicketsAjax"
+      refurl="tickets"
+      last-respone="{{tickets}}">
     </lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="Alcohol Check">
-      <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
+    <lancie-admin-page-layout endpoint="Ticket Check">
+      <p>Check of een user een ticket heeft door zijn RFID bandje te scannen.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
       <div class$="result {{color}}"></div>
     </lancie-admin-page-layout>
@@ -57,12 +59,13 @@
         properties: {
           userId: String,
           rfid: String,
+          tickets: Array,
 
-          overage: {
+          hasTicket: {
             type: Boolean,
             value: false,
           },
-          underage: {
+          displayColor: {
             type: Boolean,
             value: false,
           },
@@ -73,48 +76,50 @@
         },
 
         observers: [
-          'computeColor(overage, underage)',
+          'computeColor(hasTicket, displayColor)',
         ],
 
         _requestUser: function (e) {
-            if (e.keyCode === 13) {
-                this.$.userIdAjax.generateRequest();
-            }
+          if (e.keyCode === 13) {
+            this.$.userIdAjax.generateRequest();
+            this.rfid = '';
+          }
         },
 
         onUserId: function (e, request) {
           if (request.succeeded) {
             this.userId = request.response;
-            this.$.alcoholAjax.generateRequest();
+            this.hasTicket = !!hasTicket();
+            this.displayColor = true;
+            this.rfid.focus();
+            this.async(function() {
+              this.displayColor  = false;
+              this.hasTicket = false;
+            }, 5000);
           } else {
-            this.fire('toast', {text: 'Could not retrieve user.'});
+            this.fire('toast', {text: 'Could not check ticket.'});
           }
         },
 
-        onAlcoholCheck: function(e, request) {
-            if (request.succeeded) {
-                if (request.response.object === true) {
-                    this.overage = true;
-                    this.underage = false;
-                } else {
-                    this.overage = false;
-                    this.underage = true;
-                }
-            } else {
-              this.fire('toast', {text: 'Could not check age.'});
-            }
+        hasTicket: function () {
+          for (var ticket in tickets) {
+              if (ticket.owner.id === this.userId) {
+                  return true;
+              }
+          }
+          return false;
         },
 
         computeColor: function (overage, underage) {
-            if (!overage && !underage) {
-              this.color = 'blue';
-            }
-            if (overage && !underage) {
-              this.color = 'green';
-            }
-            if (!overage && underage) {
-              this.color = 'red';
-            }
+          if (!hasTicket && !isChecking) {
+            this.color = 'blue';
+          }
+          if (hasTicket && !isChecking) {
+            this.color = 'green';
+          }
+          if (!hasTicket && isChecking) {
+            this.color = 'red';
+          }
         }
       });
     })();

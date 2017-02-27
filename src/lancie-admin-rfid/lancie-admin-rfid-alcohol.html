@@ -14,7 +14,8 @@
         width: 200px;
         height: 200px;
         border-radius: 25px;
-        border: 5px solid #EEECEC;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        transition: background-color 0.5s ease;
       }
 
       .red {
@@ -77,9 +78,10 @@
         ],
 
         _requestUser: function (e) {
-            if (e.keyCode === 13) {
-                this.$.userIdAjax.generateRequest();
-            }
+          if (e.keyCode === 13) {
+            this.$.userIdAjax.generateRequest();
+            this.rfid = '';
+          }
         },
 
         onUserId: function (e, request) {
@@ -92,29 +94,34 @@
         },
 
         onAlcoholCheck: function(e, request) {
-            if (request.succeeded) {
-                if (request.response.object === true) {
-                    this.overage = true;
-                    this.underage = false;
-                } else {
-                    this.overage = false;
-                    this.underage = true;
-                }
+          if (request.succeeded) {
+            if (request.response.object === true) {
+              this.overage  = true;
+              this.underage = false;
             } else {
-              this.fire('toast', {text: 'Could not check age.'});
+              this.overage  = false;
+              this.underage = true;
             }
+            this.rfid.focus();
+            this.async(function() {
+              this.overage  = false;
+              this.underage = false;
+            }, 5000);
+          } else {
+            this.fire('toast', {text: 'Could not check age.'});
+          }
         },
 
         computeColor: function (overage, underage) {
-            if (!overage && !underage) {
-              this.color = 'blue';
-            }
-            if (overage && !underage) {
-              this.color = 'green';
-            }
-            if (!overage && underage) {
-              this.color = 'red';
-            }
+          if (!overage && !underage) {
+            this.color = 'blue';
+          }
+          if (overage && !underage) {
+            this.color = 'green';
+          }
+          if (!overage && underage) {
+            this.color = 'red';
+          }
         }
       });
     })();
