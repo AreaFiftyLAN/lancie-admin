@@ -97,9 +97,7 @@
           if (request.succeeded) {
             if (request.response.object === true) {
               this.overage  = true;
-              this.underage = false;
             } else {
-              this.overage  = false;
               this.underage = true;
             }
             this.rfid.focus();
@@ -113,15 +111,7 @@
         },
 
         computeColor: function (overage, underage) {
-          if (!overage && !underage) {
-            this.color = 'blue';
-          }
-          if (overage && !underage) {
-            this.color = 'green';
-          }
-          if (!overage && underage) {
-            this.color = 'red';
-          }
+          this.color = overage ? 'green' : underage ? 'red' : 'blue';
         }
       });
     })();

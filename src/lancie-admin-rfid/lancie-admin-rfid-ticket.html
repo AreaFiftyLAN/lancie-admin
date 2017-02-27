@@ -110,16 +110,8 @@
           return false;
         },
 
-        computeColor: function (overage, underage) {
-          if (!hasTicket && !isChecking) {
-            this.color = 'blue';
-          }
-          if (hasTicket && !isChecking) {
-            this.color = 'green';
-          }
-          if (!hasTicket && isChecking) {
-            this.color = 'red';
-          }
+        computeColor: function (hasTicket, displayColor) {
+          this.color = displayColor ? hasTicket ? 'green' : 'red' : 'blue';
         }
       });
     })();
