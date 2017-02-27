@@ -101,7 +101,7 @@
         _filter: function(data, filterString) {
           if (!filterString) return data;
           var result = data.filter(function(entry) {
-            return this._check(entry, filterString)
+            return this._check(entry, filterString.toLowerCase())
           }.bind(this));
           return result;
         },
@@ -111,7 +111,7 @@
             if (!object[item]) continue;
             if (typeof object[item] === 'object' && this._check(object[item], filterString)) {
               return true;
-            } else if (object[item].toString().indexOf(filterString) !== -1) {
+            } else if (object[item].toString().toLowerCase().indexOf(filterString) !== -1) {
               return true;
             }
           }
