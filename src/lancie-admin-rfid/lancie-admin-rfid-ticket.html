@@ -41,7 +41,7 @@
       auto
       id="allTicketsAjax"
       refurl="tickets"
-      last-respone="{{tickets}}">
+      on-lancie-ajax="onTickets">
     </lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Ticket Check">
@@ -89,7 +89,16 @@
         onUserId: function (e, request) {
           if (request.succeeded) {
             this.userId = request.response;
-            this.hasTicket = !!hasTicket();
+            if (function () {
+                for (var ticket in this.tickets) {
+                  if (ticket.owner.id === this.userId) {
+                    return true;
+                  }
+                }
+                return false;
+              }) {
+                this.hasTicket = true;
+            }
             this.displayColor = true;
             this.rfid.focus();
             this.async(function() {
@@ -101,13 +110,12 @@
           }
         },
 
-        hasTicket: function () {
-          for (var ticket in tickets) {
-              if (ticket.owner.id === this.userId) {
-                  return true;
-              }
+        onTickets: function (e, request) {
+          if (request.succeeded) {
+            this.tickets = request.response;
+          } else {
+            this.fire('toast', {text: 'Could not retrieve tickets.'});
           }
-          return false;
         },
 
         computeColor: function (hasTicket, displayColor) {
