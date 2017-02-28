@@ -100,11 +100,10 @@
                 this.hasTicket = true;
             }
             this.displayColor = true;
-            this.rfid.focus();
             this.async(function() {
               this.displayColor  = false;
               this.hasTicket = false;
-            }, 5000);
+            }.bind(this), 3000);
           } else {
             this.fire('toast', {text: 'Could not check ticket.'});
           }
