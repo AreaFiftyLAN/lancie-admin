@@ -112,7 +112,6 @@
         onTicketId: function (e, request) {
           if (request.succeeded) {
             this.ticketId = request.response;
-            this.$.consumeAjax.
             this.$.consumeAjax.generateRequest();
           } else {
             this.fire('toast', {text: 'Could not retrieve ticket.'});
@@ -131,8 +130,17 @@
           if (request.succeeded) {
               this.consumptionSuccessful = true;
           } else {
-
+              if (request.status === KAPOT) {
+                  this.consumptionSuccessful = false;
+              } else {
+                this.fire('toast', {text: 'Could not consume consumption.'});
+              }
           }
+          this.displayColor = true;
+          this.async(function() {
+            this.displayColor  = false;
+            this.consumptionSuccessful = false;
+          }.bind(this), 3000);
         },
 
         computeColor: function (hasTicket, displayColor) {
