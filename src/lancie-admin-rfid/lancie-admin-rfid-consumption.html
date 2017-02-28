@@ -99,7 +99,7 @@
         },
 
         observers: [
-          'computeColor(hasTicket, displayColor)',
+          'computeColor(displayColor, consumptionSuccessful)',
         ],
 
         _requestUser: function (e) {
@@ -130,10 +130,10 @@
           if (request.succeeded) {
               this.consumptionSuccessful = true;
           } else {
-              if (request.status === KAPOT) {
+              if (request.request.status === 409) {
                   this.consumptionSuccessful = false;
               } else {
-                this.fire('toast', {text: 'Could not consume consumption.'});
+                this.fire('toast', {text: 'Error while consuming consumption.'});
               }
           }
           this.displayColor = true;
@@ -143,8 +143,8 @@
           }.bind(this), 3000);
         },
 
-        computeColor: function (hasTicket, displayColor) {
-          this.color = displayColor ? hasTicket ? 'green' : 'red' : 'blue';
+        computeColor: function (displayColor, consumptionSuccessful) {
+          this.color = displayColor ? consumptionSuccessful ? 'green' : 'red' : 'blue';
         }
       });
     })();
