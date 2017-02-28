@@ -1,6 +1,10 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
 
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
 <link rel="import" href="../lancie-admin-page-layout.html">
 
 <dom-module id="lancie-admin-rfid-consumption">
@@ -14,7 +18,8 @@
         width: 200px;
         height: 200px;
         border-radius: 25px;
-        border: 5px solid #EEECEC;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        transition: background-color 0.5s ease;
       }
 
       .red {
@@ -31,20 +36,36 @@
     </style>
 
     <lancie-ajax
-      id="userIdAjax"
-      refurl="rfid/[[rfid]]/userId"
-      on-lancie-ajax="onUserId"
+      id="ticketIdAjax"
+      refurl="rfid/[[rfid]]/ticketId"
+      on-lancie-ajax="onTicketId"
     ></lancie-ajax>
 
     <lancie-ajax
-      id="alcoholAjax"
-      refurl="users/[[userId]]/alcoholcheck"
-      on-lancie-ajax="onAlcoholCheck">
+      id="consumeAjax"
+      refurl="consumptions/[[ticketId]]/consume"
+      method="post"
+      body="[[selectedConsumptionId]]"
+      on-lancie-ajax="onConsume"
+    ></lancie-ajax>
+
+    <lancie-ajax
+      auto
+      id="consumptionsAjax"
+      refurl="consumptions"
+      on-lancie-ajax="onConsumptions">
     </lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="Alcohol Check">
-      <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
+    <lancie-admin-page-layout endpoint="Consumptions">
+      <p>Laat users consumpties consumeren door de juiste consumptie te selecteren en zijn RFID bandje te scannen.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
+      <paper-dropdown-menu label="consumptions">
+        <paper-listbox class="dropdown-content" selected="{{selectedConsumptionId}}" attr-for-selected="data-id">
+          <template is="dom-repeat" items='[[consumptions]]' as="consumption">
+            <paper-item data-id="[[consumption.id]]">[[consumption.name]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
       <div class$="result {{color}}"></div>
     </lancie-admin-page-layout>
   </template>
@@ -55,14 +76,19 @@
       Polymer({
         is: 'lancie-admin-rfid-consumption',
         properties: {
-          userId: String,
+          ticketId: String,
           rfid: String,
 
-          overage: {
+          consumptions: {
+            type: Array,
+            value: [],
+          },
+
+          consumptionSuccessful: {
             type: Boolean,
             value: false,
           },
-          underage: {
+          displayColor: {
             type: Boolean,
             value: false,
           },
@@ -73,48 +99,44 @@
         },
 
         observers: [
-          'computeColor(overage, underage)',
+          'computeColor(hasTicket, displayColor)',
         ],
 
         _requestUser: function (e) {
-            if (e.keyCode === 13) {
-                this.$.userIdAjax.generateRequest();
-            }
-        },
-
-        onUserId: function (e, request) {
-          if (request.succeeded) {
-            this.userId = request.response;
-            this.$.alcoholAjax.generateRequest();
-          } else {
-            this.fire('toast', {text: 'Could not retrieve user.'});
+          if (e.keyCode === 13) {
+            this.$.ticketIdAjax.generateRequest();
+            this.rfid = '';
           }
         },
 
-        onAlcoholCheck: function(e, request) {
-            if (request.succeeded) {
-                if (request.response.object === true) {
-                    this.overage = true;
-                    this.underage = false;
-                } else {
-                    this.overage = false;
-                    this.underage = true;
-                }
-            } else {
-              this.fire('toast', {text: 'Could not check age.'});
-            }
+        onTicketId: function (e, request) {
+          if (request.succeeded) {
+            this.ticketId = request.response;
+            this.$.consumeAjax.
+            this.$.consumeAjax.generateRequest();
+          } else {
+            this.fire('toast', {text: 'Could not retrieve ticket.'});
+          }
         },
 
-        computeColor: function (overage, underage) {
-            if (!overage && !underage) {
-              this.color = 'blue';
-            }
-            if (overage && !underage) {
-              this.color = 'green';
-            }
-            if (!overage && underage) {
-              this.color = 'red';
-            }
+        onConsumptions: function (e, request) {
+          if (request.succeeded) {
+            this.consumptions = request.response;
+          } else {
+            this.fire('toast', {text: 'Could not retrieve consumptions.'});
+          }
+        },
+
+        onConsume: function (e, request) {
+          if (request.succeeded) {
+              this.consumptionSuccessful = true;
+          } else {
+              
+          }
+        },
+
+        computeColor: function (hasTicket, displayColor) {
+          this.color = displayColor ? hasTicket ? 'green' : 'red' : 'blue';
         }
       });
     })();
