@@ -1,0 +1,62 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+
+<dom-module id="lancie-admin-seats">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-ajax auto id="endpointAjax" refurl="seats?admin=true" on-lancie-ajax="onResponse">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="seats">
+      <p>Here is where the seats will be.</p>
+      <p>Requests will be on /api/v1/seats</p>
+
+      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+    </lancie-admin-page-layout>
+
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-seats',
+        properties: {
+          data: Object,
+          mappings: {
+            type: Object,
+            value: function() {
+              return {
+                ticket: ['owner.username', 'owner.profile.displayName', 'owner.profile.firstName', 'owner.profile.lastName'],
+              };
+            }
+          },
+          renderers: {
+            type: Object,
+            value: function() {
+              return {
+              };
+            }
+          }
+        },
+
+        onResponse: function (e, request) {
+          if (request.succeeded) {
+            this.$.table.setData(Object.values(request.response.seatmap)
+              .reduce(function(seats, group) {
+                return seats.concat(group);
+              }, []));
+          }
+        },
+      });
+    })();
+  </script>
+</dom-module>
