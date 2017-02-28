@@ -1,4 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 
 <link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
@@ -10,55 +12,62 @@
         display: block;
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
+      iron-icon {
+        height: 70%;
+        width: 70%;
+        margin: auto;
+        color: white;
+      }
+
       .result {
-        width: 200px;
+        display: flex;
         height: 200px;
-        border-radius: 25px;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-        transition: background-color 0.5s ease;
+        width: 200px;
+        position: relative;
+        border-radius: 100px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        transition: all 0.5s ease-in-out;
       }
 
       .red {
         background-color: #F44336;
+        left: 0;
       }
-
       .blue {
         background-color: #2196F3;
+        left: calc(50% - 100px);
       }
-
       .green {
         background-color: #4CAF50;
+        left: calc(100% - 200px);
       }
     </style>
 
-    <lancie-ajax
-      id="userIdAjax"
-      refurl="rfid/[[rfid]]/userId"
-      on-lancie-ajax="onUserId"
-    ></lancie-ajax>
-
-    <lancie-ajax
-      id="alcoholAjax"
-      refurl="users/[[userId]]/alcoholcheck"
-      on-lancie-ajax="onAlcoholCheck">
-    </lancie-ajax>
+    <lancie-ajax id="userIdAjax" refurl="rfid/[[rfid]]/userId" on-lancie-ajax="onUserId"></lancie-ajax>
+    <lancie-ajax id="alcoholAjax" refurl="users/[[userId]]/alcoholcheck" on-lancie-ajax="onAlcoholCheck"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Alcohol Check">
-      <p>Check of een user alcohol mag door zijn RFID bandje te scannen.</p>
+      <p>Check whether a user is allowed to consume alcohol.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
-      <div class$="result {{color}}"></div>
+      <div class$="result [[color]]">
+        <iron-icon id="down" icon="thumb-down" hidden></iron-icon>
+        <iron-icon id="up" icon="thumb-up" hidden></iron-icon>
+      </div>
     </lancie-admin-page-layout>
   </template>
   <script>
-    'use strict';
-
     (function () {
+      'use strict';
+
       Polymer({
         is: 'lancie-admin-rfid-alcohol',
         properties: {
           userId: String,
           rfid: String,
-
           overage: {
             type: Boolean,
             value: false,
@@ -71,14 +80,17 @@
             type: String,
             value: 'blue',
           },
+          callId: String,
         },
 
         observers: [
-          'computeColor(overage, underage)',
+          '_computeColor(overage, underage)',
         ],
 
         _requestUser: function (e) {
           if (e.keyCode === 13) {
+            this.cancelAsync(this.callId);
+            this._reset();
             this.$.userIdAjax.generateRequest();
             this.rfid = '';
           }
@@ -96,23 +108,30 @@
         onAlcoholCheck: function(e, request) {
           if (request.succeeded) {
             if (request.response.object === true) {
-              this.overage  = true;
+              this.overage = true;
+              this.$.up.hidden = false;
             } else {
               this.underage = true;
+              this.$.down.hidden = false;
             }
-            this.rfid.focus();
-            this.async(function() {
-              this.overage  = false;
-              this.underage = false;
-            }, 5000);
+            this.callId = this.async(function() {
+              this._reset();
+            }.bind(this), 3000);
           } else {
             this.fire('toast', {text: 'Could not check age.'});
           }
         },
 
-        computeColor: function (overage, underage) {
+        _computeColor: function (overage, underage) {
           this.color = overage ? 'green' : underage ? 'red' : 'blue';
-        }
+        },
+
+        _reset: function() {
+          this.overage = false;
+          this.underage = false;
+          this.$.up.hidden = true;
+          this.$.down.hidden = true;
+        },
       });
     })();
   </script>
