@@ -61,7 +61,11 @@
         </div>
         <div class$="result {{color}}"></div>
       </div>
-      <vaadin-grid id="grid" hidden items="[[_filter(data, filterString)]]"></vaadin-grid>
+      <paper-listbox selected="{{ticketId}}" attr-for-selected="data-id">
+        <template is="dom-repeat" items='[[_filter(tickets, filterString)]]' as="ticket">
+          <paper-item data-id="[[ticket.id]]">[[ticket.owner.username]]</paper-item>
+        </template>
+      </paper-listbox>
     </lancie-admin-page-layout>
   </template>
   <script>
@@ -71,9 +75,8 @@
       Polymer({
         is: 'lancie-admin-rfid-assign',
         properties: {
-          data: Object,
+          tickets: Array,
           rfid: String,
-          ticketId: String,
           assignSuccessful: {
             type: Boolean,
             value: false,
@@ -101,6 +104,7 @@
         onTickets: function (e, request) {
           if (request.succeeded) {
             this.tickets = request.response.object;
+            this.tickets = [ { owner: { username: "fuckusers"}, id: 5 } ];
           } else {
             this.fire('toast', {text: 'Could not retrieve users.'});
           }
