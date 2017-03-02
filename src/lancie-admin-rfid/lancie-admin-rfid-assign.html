@@ -101,7 +101,9 @@
         _requestTicket: function (e) {
           if (e.keyCode === 13) {
             this.$.assignRfidAjax.generateRequest();
+            this.rfid = '';
           }
+          console.log(ticketId);
         },
 
         onTickets: function (e, request) {
@@ -114,10 +116,11 @@
 
         onAssignRfid: function(e, request) {
           if (request.succeeded) {
-
+            this.assignSuccessful = true;
           } else {
-            this.fire('toast', {text: 'Could not check age.'});
+            this.fire('toast', {text: 'Could not assign RFID.'});
           }
+          this.displayColor = true;
         },
 
         computeColor: function (overage, underage) {
