@@ -1,6 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
 <link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
 
 <dom-module id="lancie-admin-rfid-assign">
@@ -103,8 +106,7 @@
 
         onTickets: function (e, request) {
           if (request.succeeded) {
-            this.tickets = request.response.object;
-            this.tickets = [ { owner: { username: "fuckusers"}, id: 5 } ];
+            this.tickets = request.response;
           } else {
             this.fire('toast', {text: 'Could not retrieve users.'});
           }
