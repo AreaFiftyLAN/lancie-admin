@@ -1,0 +1,168 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
+
+<dom-module id="lancie-admin-rfid-alcohol">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      iron-icon {
+        height: 70%;
+        width: 70%;
+        margin: auto;
+        color: white;
+      }
+
+      .result {
+        display: flex;
+        height: 200px;
+        width: 200px;
+        position: relative;
+        border-radius: 100px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        transition: all 0.5s ease-in-out;
+      }
+
+      .history {
+        display: flex;
+        flex-direction: column-reverse;
+      }
+
+      paper-item {
+        font-size: 24px;
+      }
+
+      .red {
+        background-color: #F44336;
+        left: 0;
+      }
+      .blue {
+        background-color: #2196F3;
+        left: calc(50% - 100px);
+      }
+      .green {
+        background-color: #4CAF50;
+        left: calc(100% - 200px);
+      }
+    </style>
+
+    <lancie-ajax id="userAjax" refurl="rfid/[[rfid]]/user" on-lancie-ajax="onUser"></lancie-ajax>
+    <lancie-ajax id="alcoholAjax" refurl="users/[[user.id]]/alcoholcheck" on-lancie-ajax="onAlcoholCheck"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Alcohol Check">
+      <p>Check whether a user is allowed to consume alcohol.</p>
+      <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
+      <div class$="result [[color]]">
+        <iron-icon id="down" icon="thumb-down" hidden></iron-icon>
+        <iron-icon id="up" icon="thumb-up" hidden></iron-icon>
+      </div>
+
+      <div class="history">
+        <template is="dom-repeat" items="[[history]]">
+          <paper-item><paper-checkbox checked="[[item.alcohol]]" disabled></paper-checkbox>[[item.name]]</paper-item>
+        </template>
+      </div>
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-rfid-alcohol',
+        properties: {
+          history: {
+            type: Array,
+            value: function() {
+              return [];
+            },
+          },
+          user: String,
+          rfid: String,
+          overage: {
+            type: Boolean,
+            value: false,
+          },
+          underage: {
+            type: Boolean,
+            value: false,
+          },
+          color: {
+            type: String,
+            value: 'blue',
+          },
+          callId: String,
+        },
+
+        observers: [
+          '_computeColor(overage, underage)',
+        ],
+
+        _requestUser: function (e) {
+          if (e.keyCode === 13) {
+            this._reset();
+            this.cancelAsync(this.callId);
+            this.$.userAjax.generateRequest();
+            this.rfid = '';
+          }
+        },
+
+        onUser: function (e, request) {
+          if (request.succeeded) {
+            this.user = request.response;
+            this.$.alcoholAjax.generateRequest();
+          } else {
+            this.fire('toast', {text: 'Could not retrieve user.'});
+          }
+        },
+
+        onAlcoholCheck: function(e, request) {
+          if (request.succeeded) {
+            var alcohol;
+            if (request.response.object) {
+              this.overage = true;
+              this.$.up.hidden = false;
+              alcohol = true;
+            } else {
+              this.underage = true;
+              alcohol = false;
+              this.$.down.hidden = false;
+            }
+            if (this.history.length >= 10) {
+              this.shift('history');
+            }
+            this.push('history', {name: this.user.profile.firstName + ' ' + this.user.profile.lastName, alcohol: alcohol});
+            this.callId = this.async(function() {
+              this._reset();
+            }.bind(this), 3000);
+          } else {
+            this.fire('toast', {text: 'Could not check age.'});
+          }
+        },
+
+        _computeColor: function (overage, underage) {
+          this.color = overage ? 'green' : underage ? 'red' : 'blue';
+        },
+
+        _reset: function() {
+          this.overage = false;
+          this.underage = false;
+          this.$.up.hidden = true;
+          this.$.down.hidden = true;
+        },
+      });
+    })();
+  </script>
+</dom-module>

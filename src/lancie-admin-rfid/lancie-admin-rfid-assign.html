@@ -1,0 +1,146 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/lancie-error/lancie-error.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
+
+<dom-module id="lancie-admin-rfid-assign">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      lancie-error {
+        margin-top: 8px;
+      }
+
+      paper-button {
+        background-color: var(--primary-color);
+        color: white;
+        margin: 0;
+        width: 100%;
+      }
+    </style>
+
+    <lancie-ajax auto
+      refurl="tickets"
+      on-lancie-ajax="onTickets">
+    </lancie-ajax>
+
+    <lancie-ajax
+      id="assignRfidAjax"
+      refurl="rfid"
+      method="POST"
+      on-lancie-ajax="onAssignRfid">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Assign RFID">
+      <p>Check in a user by scanning the RFID tag and selecting the user from the list below.</p>
+      <paper-button on-tap="_registerUser">Check in</paper-button>
+      <lancie-error id="error"></lancie-error>
+      <paper-input id="rfid" label="RFID" value="{{rfid}}" on-keyDown="_focusUser" autofocus></paper-input>
+      <paper-input id="userSearch" type="search" label="Search user" value="{{filterString}}" autofocus></paper-input>
+
+      <paper-listbox selected="{{ticketId}}" attr-for-selected="ticket-id">
+        <template is="dom-repeat" items="[[_filter(tickets, filterString)]]">
+          <paper-item ticket-id="[[item.id]]">
+            [[item.owner.profile.firstName]] [[item.owner.profile.lastName]]
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-rfid-assign',
+        properties: {
+          tickets: Array,
+          rfid: String,
+          ticketId: String,
+          assignSuccessful: {
+            type: Boolean,
+            value: false,
+          },
+          displayColor: {
+            type: Boolean,
+            value: false,
+          },
+          color: {
+            type: String,
+            value: 'blue',
+          },
+        },
+
+        _focusUser: function(e) {
+          if (e.keyCode === 13) {
+            this.$.userSearch.focus();
+          }
+        },
+
+        _registerUser: function (e) {
+          this.$.error.clear();
+          if (!this.rfid) {
+            this.$.error.setError('Please scan an RFID-wristband.');
+            return;
+          }
+          if (!this.ticketId) {
+            this.$.error.setError('Please select a user.');
+            return;
+          }
+          this.$.assignRfidAjax.body = {
+            rfid: this.rfid,
+            ticketId: this.ticketId,
+          };
+          this.$.assignRfidAjax.generateRequest();
+        },
+
+        onTickets: function (e, request) {
+          if (request.succeeded) {
+            this.tickets = request.response;
+          } else {
+            this.fire('toast', {text: 'Could not retrieve users.'});
+          }
+        },
+
+        onAssignRfid: function(e, request) {
+          if (request.succeeded) {
+            this.fire('toast', {text: 'Check-in successful.'});
+            this.rfid = '';
+            this.$.userSearch.value = '';
+            this.ticketId = '';
+            this.assignSuccessful = true;
+            this.$.rfid.focus();
+          } else if (request.request.status === 409) {
+            this.$.error.setError('Ticket or RFID has already been linked.');
+          } else if (request.request.status === 400) {
+            this.$.error.setError('User has no valid ticket.');
+          } else {
+            this.$.error.setError('Unable to assign user to RFID.');
+          }
+          this.displayColor = true;
+        },
+
+        _filter: function(data, filterString) {
+          if (!filterString) return data;
+          var result = data.filter(function(ticket) {
+            var name = ticket.owner.profile.firstName + ' ' + ticket.owner.profile.lastName;
+            return name.toLowerCase().indexOf(filterString.toLowerCase()) !== -1;
+          }.bind(this));
+          return result;
+        },
+      });
+    })();
+  </script>
+</dom-module>

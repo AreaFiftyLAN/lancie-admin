@@ -1,0 +1,172 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
+
+<dom-module id="lancie-admin-rfid-consumption">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      iron-icon {
+        height: 70%;
+        width: 70%;
+        margin: auto;
+        color: white;
+      }
+
+      .result {
+        display: flex;
+        height: 200px;
+        width: 200px;
+        position: relative;
+        border-radius: 100px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        transition: all 0.5s ease-in-out;
+      }
+
+      .red {
+        background-color: #F44336;
+        left: 0;
+      }
+
+      .blue {
+        background-color: #2196F3;
+        left: calc(50% - 100px);
+      }
+
+      .green {
+        background-color: #4CAF50;
+        left: calc(100% - 200px);
+      }
+    </style>
+
+    <lancie-ajax
+      id="ticketIdAjax"
+      refurl="rfid/[[rfid]]/ticketId"
+      on-lancie-ajax="onTicketId"
+    ></lancie-ajax>
+
+    <lancie-ajax
+      id="consumeAjax"
+      refurl="consumptions/[[ticketId]]/consume"
+      method="post"
+      body="[[selectedConsumptionId]]"
+      on-lancie-ajax="onConsume"
+    ></lancie-ajax>
+
+    <lancie-ajax auto
+      id="consumptionsAjax"
+      refurl="consumptions"
+      on-lancie-ajax="onConsumptions">
+    </lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Consumptions">
+      <p>Consume a consumption.</p>
+      <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
+      <paper-dropdown-menu label="consumptions">
+        <paper-listbox class="dropdown-content" selected="{{selectedConsumptionId}}" attr-for-selected="data-id">
+          <template is="dom-repeat" items='[[consumptions]]'>
+            <paper-item data-id="[[item.id]]">[[item.name]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+
+      <div class$="result [[_computeColor(displayColor, consumptionSuccessful)]]">
+        <iron-icon id="down" icon="thumb-down" hidden></iron-icon>
+        <iron-icon id="up" icon="thumb-up" hidden></iron-icon>
+      </div>
+
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-rfid-consumption',
+        properties: {
+          ticketId: String,
+          rfid: String,
+          consumptions: {
+            type: Array,
+            value: [],
+          },
+          displayColor: {
+            type: Boolean,
+            value: false,
+          },
+          consumptionSuccessful: {
+            type: Boolean,
+            value: false,
+          },
+          color: {
+            type: String,
+            value: 'blue',
+          },
+          callId: String,
+        },
+
+        _requestUser: function (e) {
+          if (e.keyCode === 13) {
+            this.cancelAsync(this.callId);
+            this.$.ticketIdAjax.generateRequest();
+            this.rfid = '';
+          }
+        },
+
+        onTicketId: function (e, request) {
+          if (request.succeeded) {
+            this.ticketId = request.response;
+            this.$.consumeAjax.generateRequest();
+          } else {
+            this.fire('toast', {text: 'Could not retrieve ticket.'});
+          }
+        },
+
+        onConsumptions: function (e, request) {
+          if (request.succeeded) {
+            this.consumptions = request.response;
+          } else {
+            this.fire('toast', {text: 'Could not retrieve consumptions.'});
+          }
+        },
+
+        onConsume: function (e, request) {
+          this.displayColor = true;
+          if (request.succeeded) {
+            this.$.up.hidden = false;
+            this.consumptionSuccessful = true;
+          } else {
+            this.$.down.hidden = false;
+            if (request.request.status === 409) {
+              this.consumptionSuccessful = false;
+            } else {
+              this.fire('toast', {text: 'Error while consuming consumption.'});
+            }
+          }
+          this.callId = this.async(function() {
+            this.$.up.hidden = true;
+            this.$.down.hidden = true;
+            this.displayColor = false;
+            this.consumptionSuccessful = false;
+          }.bind(this), 3000);
+        },
+
+        _computeColor: function (displayColor, consumptionSuccessful) {
+          return displayColor ? consumptionSuccessful ? 'green' : 'red' : 'blue';
+        },
+      });
+    })();
+  </script>
+</dom-module>

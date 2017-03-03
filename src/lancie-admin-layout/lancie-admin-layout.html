@@ -12,6 +12,10 @@
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 
 <link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
@@ -57,6 +61,10 @@
       .logout {
         border-top: 1px solid #e8e8e8;
       }
+
+      .rfid {
+        border-top: 1px solid #e8e8e8;
+      }
     </style>
 
 
@@ -94,6 +102,18 @@
           <paper-icon-item data-route="seats">
             <iron-icon icon="event-seat" item-icon></iron-icon>
             <a href="/seats">Seats</a>
+          </paper-icon-item>
+          <paper-icon-item class="rfid" data-route="rfidassign">
+            <iron-icon icon="device:nfc" item-icon></iron-icon>
+            <a href="/rfidassign">Assign RFID</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="alcoholcheck">
+            <iron-icon icon="maps:local-bar" item-icon></iron-icon>
+            <a href="/alcoholcheck">Alcohol Check</a>
+          </paper-icon-item>
+          <paper-icon-item data-route="consumptions">
+            <iron-icon icon="maps:restaurant" item-icon></iron-icon>
+            <a href="/consumptions">Consumptions</a>
           </paper-icon-item>
           <paper-icon-item class="logout" on-tap="logout">
             <iron-icon icon="exit-to-app" item-icon></iron-icon>
