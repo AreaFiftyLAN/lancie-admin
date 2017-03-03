@@ -116,10 +116,12 @@
 
         onAssignRfid: function(e, request) {
           if (request.succeeded) {
+            this.fire('toast', {text: 'Check-in successful.'});
             this.rfid = '';
             this.$.userSearch.value = '';
             this.ticketId = '';
             this.assignSuccessful = true;
+            this.$.rfid.focus();
           } else if (request.request.status === 409) {
             this.$.error.setError('Ticket or RFID has already been linked.');
           } else if (request.request.status === 400) {

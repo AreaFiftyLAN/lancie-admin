@@ -14,24 +14,40 @@
         display: block;
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
+      iron-icon {
+        height: 70%;
+        width: 70%;
+        margin: auto;
+        color: white;
+      }
+
       .result {
-        width: 200px;
+        display: flex;
         height: 200px;
-        border-radius: 25px;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-        transition: background-color 0.5s ease;
+        width: 200px;
+        position: relative;
+        border-radius: 100px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        transition: all 0.5s ease-in-out;
       }
 
       .red {
         background-color: #F44336;
+        left: 0;
       }
 
       .blue {
         background-color: #2196F3;
+        left: calc(50% - 100px);
       }
 
       .green {
         background-color: #4CAF50;
+        left: calc(100% - 200px);
       }
     </style>
 
@@ -49,46 +65,47 @@
       on-lancie-ajax="onConsume"
     ></lancie-ajax>
 
-    <lancie-ajax
-      auto
+    <lancie-ajax auto
       id="consumptionsAjax"
       refurl="consumptions"
       on-lancie-ajax="onConsumptions">
     </lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Consumptions">
-      <p>Laat users consumpties consumeren door de juiste consumptie te selecteren en zijn RFID bandje te scannen.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
       <paper-dropdown-menu label="consumptions">
         <paper-listbox class="dropdown-content" selected="{{selectedConsumptionId}}" attr-for-selected="data-id">
-          <template is="dom-repeat" items='[[consumptions]]' as="consumption">
-            <paper-item data-id="[[consumption.id]]">[[consumption.name]]</paper-item>
+          <template is="dom-repeat" items='[[consumptions]]'>
+            <paper-item data-id="[[item.id]]">[[item.name]]</paper-item>
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
-      <div class$="result {{color}}"></div>
+
+      <div class$="result [[_computeColor(displayColor, consumptionSuccessful)]]">
+        <iron-icon id="down" icon="thumb-down" hidden></iron-icon>
+        <iron-icon id="up" icon="thumb-up" hidden></iron-icon>
+      </div>
+
     </lancie-admin-page-layout>
   </template>
   <script>
-    'use strict';
-
     (function () {
+      'use strict';
+
       Polymer({
         is: 'lancie-admin-rfid-consumption',
         properties: {
           ticketId: String,
           rfid: String,
-
           consumptions: {
             type: Array,
             value: [],
           },
-
-          consumptionSuccessful: {
+          displayColor: {
             type: Boolean,
             value: false,
           },
-          displayColor: {
+          consumptionSuccessful: {
             type: Boolean,
             value: false,
           },
@@ -96,14 +113,12 @@
             type: String,
             value: 'blue',
           },
+          callId: String,
         },
-
-        observers: [
-          'computeColor(displayColor, consumptionSuccessful)',
-        ],
 
         _requestUser: function (e) {
           if (e.keyCode === 13) {
+            this.cancelAsync(this.callId);
             this.$.ticketIdAjax.generateRequest();
             this.rfid = '';
           }
@@ -127,25 +142,29 @@
         },
 
         onConsume: function (e, request) {
-          if (request.succeeded) {
-              this.consumptionSuccessful = true;
-          } else {
-              if (request.request.status === 409) {
-                  this.consumptionSuccessful = false;
-              } else {
-                this.fire('toast', {text: 'Error while consuming consumption.'});
-              }
-          }
           this.displayColor = true;
-          this.async(function() {
-            this.displayColor  = false;
+          if (request.succeeded) {
+            this.$.up.hidden = false;
+            this.consumptionSuccessful = true;
+          } else {
+            this.$.down.hidden = false;
+            if (request.request.status === 409) {
+              this.consumptionSuccessful = false;
+            } else {
+              this.fire('toast', {text: 'Error while consuming consumption.'});
+            }
+          }
+          this.callId = this.async(function() {
+            this.$.up.hidden = true;
+            this.$.down.hidden = true;
+            this.displayColor = false;
             this.consumptionSuccessful = false;
           }.bind(this), 3000);
         },
 
-        computeColor: function (displayColor, consumptionSuccessful) {
-          this.color = displayColor ? consumptionSuccessful ? 'green' : 'red' : 'blue';
-        }
+        _computeColor: function (displayColor, consumptionSuccessful) {
+          return displayColor ? consumptionSuccessful ? 'green' : 'red' : 'blue';
+        },
       });
     })();
   </script>

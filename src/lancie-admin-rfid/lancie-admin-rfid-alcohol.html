@@ -112,8 +112,8 @@
 
         _requestUser: function (e) {
           if (e.keyCode === 13) {
-            this.cancelAsync(this.callId);
             this._reset();
+            this.cancelAsync(this.callId);
             this.$.userAjax.generateRequest();
             this.rfid = '';
           }
