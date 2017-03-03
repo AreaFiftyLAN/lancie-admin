@@ -1,6 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/lancie-error/lancie-error.html">
 
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
@@ -13,35 +15,23 @@
         display: block;
       }
 
-      .container {
-        display: flex;
-        justify-content: space-between;
+      [hidden] {
+        display: none !important;
       }
 
-      .result {
-        width: 200px;
-        height: 200px;
-        border-radius: 25px;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-        transition: background-color 0.5s ease;
+      lancie-error {
+        margin-top: 8px;
       }
 
-      .red {
-        background-color: #F44336;
-      }
-
-      .blue {
-        background-color: #2196F3;
-      }
-
-      .green {
-        background-color: #4CAF50;
+      paper-button {
+        background-color: var(--primary-color);
+        color: white;
+        margin: 0;
+        width: 100%;
       }
     </style>
 
-    <lancie-ajax
-      auto
-      id="allTicketsAjax"
+    <lancie-ajax auto
       refurl="tickets"
       on-lancie-ajax="onTickets">
     </lancie-ajax>
@@ -49,24 +39,22 @@
     <lancie-ajax
       id="assignRfidAjax"
       refurl="rfid"
-      method="post"
-      body='{"rfid": "[[rfid]]", "ticketId": "[[ticketId]]"}'
+      method="POST"
       on-lancie-ajax="onAssignRfid">
     </lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Assign RFID">
-      <div class="container">
-        <div>
-          <p>Assign an RFID tag by selecting a user and scanning an RFID into the input below.</p>
-          <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestTicket"></paper-input>
-          <p>Search for a user below and select a user from the table.</p>
-          <paper-input autofocus id="userSearch" value="{{filterString}}" on-keyDown="_requestTicket"></paper-input>
-        </div>
-        <div class$="result {{color}}"></div>
-      </div>
-      <paper-listbox selected="{{ticketId}}" attr-for-selected="data-id">
-        <template is="dom-repeat" items='[[_filter(tickets, filterString)]]' as="ticket">
-          <paper-item data-id="[[ticket.id]]">[[ticket.owner.username]]</paper-item>
+      <p>Check in a user by scanning the RFID tag and selecting the user from the list below.</p>
+      <paper-button on-tap="_registerUser">Check in</paper-button>
+      <lancie-error id="error"></lancie-error>
+      <paper-input id="rfid" label="RFID" value="{{rfid}}" on-keyDown="_focusUser" autofocus></paper-input>
+      <paper-input id="userSearch" type="search" label="Search user" value="{{filterString}}" autofocus></paper-input>
+
+      <paper-listbox selected="{{ticketId}}" attr-for-selected="ticket-id">
+        <template is="dom-repeat" items="[[_filter(tickets, filterString)]]">
+          <paper-item ticket-id="[[item.id]]">
+            [[item.owner.profile.firstName]] [[item.owner.profile.lastName]]
+          </paper-item>
         </template>
       </paper-listbox>
     </lancie-admin-page-layout>
@@ -80,6 +68,7 @@
         properties: {
           tickets: Array,
           rfid: String,
+          ticketId: String,
           assignSuccessful: {
             type: Boolean,
             value: false,
@@ -94,16 +83,27 @@
           },
         },
 
-        observers: [
-          'computeColor(overage, underage)',
-        ],
-
-        _requestTicket: function (e) {
+        _focusUser: function(e) {
           if (e.keyCode === 13) {
-            this.$.assignRfidAjax.generateRequest();
-            this.rfid = '';
+            this.$.userSearch.focus();
           }
-          console.log(ticketId);
+        },
+
+        _registerUser: function (e) {
+          this.$.error.clear();
+          if (!this.rfid) {
+            this.$.error.setError('Please scan an RFID-wristband.');
+            return;
+          }
+          if (!this.ticketId) {
+            this.$.error.setError('Please select a user.');
+            return;
+          }
+          this.$.assignRfidAjax.body = {
+            rfid: this.rfid,
+            ticketId: this.ticketId,
+          };
+          this.$.assignRfidAjax.generateRequest();
         },
 
         onTickets: function (e, request) {
@@ -116,45 +116,28 @@
 
         onAssignRfid: function(e, request) {
           if (request.succeeded) {
+            this.rfid = '';
+            this.$.userSearch.value = '';
+            this.ticketId = '';
             this.assignSuccessful = true;
+          } else if (request.request.status === 409) {
+            this.$.error.setError('Ticket or RFID has already been linked.');
+          } else if (request.request.status === 400) {
+            this.$.error.setError('User has no valid ticket.');
           } else {
-            this.fire('toast', {text: 'Could not assign RFID.'});
+            this.$.error.setError('Unable to assign user to RFID.');
           }
           this.displayColor = true;
         },
 
-        computeColor: function (overage, underage) {
-          if (!overage && !underage) {
-            this.color = 'blue';
-          }
-          if (overage && !underage) {
-            this.color = 'green';
-          }
-          if (!overage && underage) {
-            this.color = 'red';
-          }
-        },
-
         _filter: function(data, filterString) {
           if (!filterString) return data;
-          var result = data.filter(function(entry) {
-            return this._check(entry, filterString.toLowerCase())
+          var result = data.filter(function(ticket) {
+            var name = ticket.owner.profile.firstName + ' ' + ticket.owner.profile.lastName;
+            return name.toLowerCase().indexOf(filterString.toLowerCase()) !== -1;
           }.bind(this));
           return result;
         },
-
-        _check: function(object, filterString) {
-          for (var item in object) {
-            if (!object[item]) continue;
-            if (typeof object[item] === 'object' && this._check(object[item], filterString)) {
-              return true;
-            } else if (object[item].toString().toLowerCase().indexOf(filterString) !== -1) {
-              return true;
-            }
-          }
-          return false;
-        },
-
       });
     })();
   </script>
