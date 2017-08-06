@@ -27,21 +27,25 @@
 
     <vaadin-grid id="grid"
       items="[[_filter(data, filterString)]]"
-      hidden
-    ></vaadin-grid>
+      hidden>
+      <vaadin-grid-column width="50px" flex-grow="0">
+        <template class="header">ID</template>
+        <template>[[item.id]]</template>
+      </vaadin-grid-column>
+    </vaadin-grid>
 
   </template>
   <script>
-    (function () {
+    (function() {
       'use strict';
 
       Polymer({
         is: 'lancie-admin-table',
         properties: {
           data: Object,
+          filterString: String,
           columnMappings: Object,
           columnRenderers: Object,
-          filterString: String,
         },
 
         /*
@@ -53,11 +57,11 @@
           used for a column. The renderer is able to attach custom
           HTML to the cell.
         */
-        setData: function (data) {
+        setData: function(data) {
           if (data.length) {
             // Get columns
             var keys = Object.keys(data[0]);
-            var columns = keys.map(function (key) {
+            var columns = keys.map(function(key) {
               // If a mapping exists, resolve it
               if (!!this.columnMappings[key]) {
                 return this.columnMappings[key].map(function(item) {
@@ -90,12 +94,28 @@
             }.bind(this));
 
             // Flatten the columns and assign data
-            this.$.grid._columnTree = columns;
+            for (var col in columns) {
+              this._addColumn(columns[col].name);
+            }
             this.data = data;
             this.$.grid.hidden = false;
           } else {
             this.$.noData.hidden = false;
           }
+        },
+
+        _addColumn: function(name) {
+          var headerTemplate = document.createElement('template');
+          headerTemplate.content.textContent = name;
+
+          var bodyTemplate = document.createElement('template');
+          bodyTemplate.content.textContent = '[[item.' + name +']]'
+
+          var column = document.createElement('vaadin-grid-column');
+					column.headerTemplate = headerTemplate;
+          column.template = bodyTemplate;
+
+          Polymer.dom(this.$.grid).appendChild(column);
         },
 
         _filter: function(data, filterString) {
@@ -117,7 +137,7 @@
           }
           return false;
         }
-     });
+      });
     })();
   </script>
 </dom-module>
