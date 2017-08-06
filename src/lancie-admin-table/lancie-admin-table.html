@@ -90,7 +90,7 @@
             }.bind(this));
 
             // Flatten the columns and assign data
-            this.$.grid.columns = columns;
+            this.$.grid._columnTree = columns;
             this.data = data;
             this.$.grid.hidden = false;
           } else {

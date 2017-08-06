@@ -22,5 +22,8 @@
     "favicon.ico",
     "robots.txt",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
-  ]
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  }
 }
