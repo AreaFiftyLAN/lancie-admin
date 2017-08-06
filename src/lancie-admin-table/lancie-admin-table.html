@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <dom-module id="lancie-admin-table">
   <template>
@@ -27,11 +28,14 @@
 
     <vaadin-grid id="grid"
       items="[[_filter(data, filterString)]]"
-      hidden>
-      <vaadin-grid-column width="50px" flex-grow="0">
-        <template class="header">ID</template>
-        <template>[[item.id]]</template>
-      </vaadin-grid-column>
+      >
+      <template is="dom-repeat" items="[[columns]]" as="column">
+
+        <vaadin-grid-column resizable hidable sortable>
+          <template class="header">[[column.name]]</template>
+          <template>[[get(column.name, item)]]</template>
+        </vaadin-grid-column>
+      </template>
     </vaadin-grid>
 
   </template>
@@ -43,6 +47,7 @@
         is: 'lancie-admin-table',
         properties: {
           data: Object,
+          columns: Array,
           filterString: String,
           columnMappings: Object,
           columnRenderers: Object,
@@ -93,29 +98,12 @@
               return col;
             }.bind(this));
 
-            // Flatten the columns and assign data
-            for (var col in columns) {
-              this._addColumn(columns[col].name);
-            }
+            this.columns = columns;
             this.data = data;
             this.$.grid.hidden = false;
           } else {
             this.$.noData.hidden = false;
           }
-        },
-
-        _addColumn: function(name) {
-          var headerTemplate = document.createElement('template');
-          headerTemplate.content.textContent = name;
-
-          var bodyTemplate = document.createElement('template');
-          bodyTemplate.content.textContent = '[[item.' + name +']]'
-
-          var column = document.createElement('vaadin-grid-column');
-					column.headerTemplate = headerTemplate;
-          column.template = bodyTemplate;
-
-          Polymer.dom(this.$.grid).appendChild(column);
         },
 
         _filter: function(data, filterString) {
