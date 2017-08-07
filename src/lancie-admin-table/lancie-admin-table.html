@@ -1,8 +1,10 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid-selection-column.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 
 <dom-module id="lancie-admin-table">
   <template>
@@ -114,9 +116,17 @@
     <p id="noData" hidden>No data found!</p>
 
     <vaadin-grid id="grid" class="material" items="[[_filter(data, filterString)]]">
+      <vaadin-grid-selection-column width="66px" flex="0" select-all="{{selectAll}}">
+        <template class="header">
+          <paper-checkbox checked="{{selectAll}}"></paper-checkbox>
+        </template>
+        <template>
+          <paper-checkbox checked="{{selected}}"></paper-checkbox>
+        </template>
+      </vaadin-grid-selection-column>
       <template is="dom-repeat" items="[[columns]]" as="column">
         <vaadin-grid-column>
-          <template class="header"><vaadin-grid-sorter path="[[column.name]]">[[column.name]]</vaadin-grid-sorter></template>
+          <template class="header"><vaadin-grid-sorter path="[[column.name]]">[[column.name]] <iron-icon icon="icons:arrow-upward"></iron-icon></vaadin-grid-sorter></template>
           <template>[[_render(item, column)]]</template>
         </vaadin-grid-column>
       </template>
