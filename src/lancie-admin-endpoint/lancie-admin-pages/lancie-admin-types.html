@@ -42,11 +42,11 @@
             type: Object,
             value: function() {
               return {
-                possibleOptions: function(cell) {
-                  var text = cell.data.reduce(function(text, t){
+                possibleOptions: function(data) {
+                  var text = data.reduce(function(text, t){
                     return text + t.name + ' ' + t.price +', ';
                   }, '');
-                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                  return text.substr(0, text.length - 2);
                 },
               };
             }

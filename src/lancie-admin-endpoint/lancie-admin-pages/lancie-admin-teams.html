@@ -43,11 +43,11 @@
             type: Object,
             value: function() {
               return {
-                members: function(cell) {
-                  var text = cell.data.reduce(function(text, m){
+                members: function(data) {
+                  var text = data.reduce(function(text, m){
                     return text + m.username + ', ';
                   }, '');
-                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                  return text.substr(0, text.length - 2);
                 },
               };
             }
