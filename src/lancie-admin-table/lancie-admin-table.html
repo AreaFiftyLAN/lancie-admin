@@ -211,7 +211,7 @@
         _filter: function(data, filterString) {
           if (!filterString) return data;
           var result = data.filter(function(entry) {
-            return this._check(entry, filterString.toLowerCase())
+            return this._check(entry, filterString.toLowerCase());
           }.bind(this));
           return result;
         },
