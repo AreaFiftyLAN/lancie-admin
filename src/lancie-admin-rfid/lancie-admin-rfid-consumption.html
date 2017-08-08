@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 
 <link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
@@ -75,7 +76,7 @@
       <p>Consume a consumption.</p>
       <paper-input autofocus id="rfid" value="{{rfid}}" on-keyDown="_requestUser"></paper-input>
       <paper-dropdown-menu label="consumptions">
-        <paper-listbox class="dropdown-content" selected="{{selectedConsumptionId}}" attr-for-selected="data-id">
+        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{selectedConsumptionId}}" attr-for-selected="data-id">
           <template is="dom-repeat" items='[[consumptions]]'>
             <paper-item data-id$="[[item.id]]">[[item.name]]</paper-item>
           </template>
