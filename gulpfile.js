@@ -22,16 +22,13 @@ const glob = require('glob');
 // const logging = require('plylog');
 // logging.setVerbose();
 
-const project = require('./project.js');
-const ensureLazyFragments = require('./gulp-tasks/ensure-lazy-fragments.js');
+const project = require('./gulp/project.js');
+const ensureLazyFragments = require('./gulp/ensure-lazy-fragments.js');
 
 const root = path.resolve(process.cwd(), 'images');
 const optimizedImagesRoot = path.resolve(process.cwd(), 'images-optimized');
 const imageOptions = {
-  activities: '340x340',
   logos: '250,scale-down',
-  unofficial: '340x340',
-  slider: '2000x500,scale-down'
 };
 
 // Optimize images with ImageOptim
@@ -70,16 +67,14 @@ gulp.task('ensure-images-optimized', () =>
 gulp.task('ensure-lazy-fragments', ensureLazyFragments);
 
 function linter() {
-  return gulp.src([ 'scripts/**/*.js',
-                    'src/**/*.html' ])
+  return gulp.src('src/**/*.html')
       .pipe(jshint.extract()) // Extract JS from .html files
       .pipe(jshint())
       .pipe(jshint.reporter('jshint-stylish'));
 }
 
 // Clean the build directory, split all source and dependency files into streams
-// and process them, and output bundled and unbundled versions of the project
-// with their own service workers
+// and process them, and output the complete project
 gulp.task('default', gulp.series([
   linter,
   project
