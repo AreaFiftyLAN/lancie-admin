@@ -22,7 +22,7 @@
       }
     </style>
 
-    <paper-card heading="[[endpoint]]">
+    <paper-card heading="[[_getHeading(endpoint)]]">
       <div class="card-content">
         <slot></slot>
       </div>
@@ -37,6 +37,10 @@
         is: 'lancie-admin-page-layout',
         properties: {
           endpoint: String,
+        },
+
+        _getHeading: function(heading) {
+          return heading.charAt(0).toUpperCase() + heading.slice(1);
         },
       });
     })();
