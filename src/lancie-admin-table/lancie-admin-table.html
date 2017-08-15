@@ -1,6 +1,10 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid-selection-column.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 
 <dom-module id="lancie-admin-table">
   <template>
@@ -14,34 +18,146 @@
       }
 
       vaadin-grid {
+        height: 100%;
         --primary-color: var(--secondary-color);
         --vaadin-grid-row-stripe-cell: {
           background-color: #FBFBFB;
         }
       }
-    </style>
+
+      vaadin-grid.material {
+
+      font-family: Roboto, sans-serif;
+      --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
+
+      --vaadin-grid-cell: {
+        padding: 0;
+      };
+
+      --vaadin-grid-header-cell: {
+        height: 64px;
+        color: rgba(0, 0, 0, var(--dark-secondary-opacity));
+        font-size: 12px;
+      };
+
+      --vaadin-grid-body-cell: {
+        height: 48px;
+        color: rgba(0, 0, 0, var(--dark-primary-opacity));
+        font-size: 13px;
+      };
+
+      --vaadin-grid-body-row-hover-cell: {
+        background-color: var(--paper-grey-200);
+      };
+
+      --vaadin-grid-body-row-selected-cell: {
+        background-color: var(--paper-grey-100);
+      };
+
+      --vaadin-grid-focused-cell: {
+        box-shadow: none;
+        font-weight: bold;
+      };
+    }
+
+    vaadin-grid.material .cell {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 56px;
+    }
+
+    vaadin-grid.material .cell.last {
+      padding-right: 24px;
+    }
+
+    vaadin-grid.material .cell.numeric {
+      text-align: right;
+    }
+
+    vaadin-grid.material paper-checkbox {
+      --primary-color: var(--paper-indigo-500);
+      margin: 0 24px;
+    }
+
+    vaadin-grid.material vaadin-grid-sorter {
+      --vaadin-grid-sorter-arrow: {
+        display: none !important;
+      };
+    }
+
+    vaadin-grid.material vaadin-grid-sorter .cell {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    vaadin-grid.material vaadin-grid-sorter iron-icon {
+      transform: scale(0.8) translateZ(0);
+      transition: all 0.3s;
+    }
+
+    vaadin-grid.material vaadin-grid-sorter:not([direction]) iron-icon {
+      color: rgba(0, 0, 0, var(--dark-disabled-opacity));
+    }
+
+    vaadin-grid.material vaadin-grid-sorter[direction] {
+      color: rgba(0, 0, 0, var(--dark-primary-opacity));
+    }
+
+    vaadin-grid.material vaadin-grid-sorter[direction=desc] iron-icon {
+      transform: scale(0.8) rotate(180deg) translateZ(0);
+    }
+</style>
+
+
 
     <paper-input value="{{filterString}}" type="search"></paper-input>
 
     <p id="noData" hidden>No data found!</p>
 
-    <vaadin-grid id="grid"
-      items="[[_filter(data, filterString)]]"
-      hidden
-    ></vaadin-grid>
+    <vaadin-grid id="grid" class="material" items="[[_filter(data, filterString)]]" hidden>
+      <vaadin-grid-selection-column width="66px" flex="0" select-all="{{selectAll}}">
+        <template class="header">
+          <paper-checkbox checked="{{selectAll}}"></paper-checkbox>
+        </template>
+        <template>
+          <paper-checkbox checked="{{selected}}"></paper-checkbox>
+        </template>
+      </vaadin-grid-selection-column>
+      <template is="dom-repeat" items="[[columns]]" as="column">
+        <vaadin-grid-column>
+          <template class="header"><vaadin-grid-sorter path="[[column.name]]">[[column.name]] <iron-icon icon="icons:arrow-upward"></iron-icon></vaadin-grid-sorter></template>
+          <template>[[_render(item, column)]]</template>
+        </vaadin-grid-column>
+      </template>
+    </vaadin-grid>
 
   </template>
   <script>
-    (function () {
+    (function() {
       'use strict';
 
       Polymer({
         is: 'lancie-admin-table',
         properties: {
           data: Object,
+          columns: Array,
+          filterString: String,
           columnMappings: Object,
           columnRenderers: Object,
-          filterString: String,
+        },
+
+        _render: function(item, column) {
+          if(item) {
+            if (column.renderer) {
+              return column.renderer(item[column.name]);
+            } else {
+              return this.get(column.name, item);
+            }
+          } else {
+            return undefined;
+          }
         },
 
         /*
@@ -53,11 +169,11 @@
           used for a column. The renderer is able to attach custom
           HTML to the cell.
         */
-        setData: function (data) {
+        setData: function(data) {
           if (data.length) {
             // Get columns
             var keys = Object.keys(data[0]);
-            var columns = keys.map(function (key) {
+            var columns = keys.map(function(key) {
               // If a mapping exists, resolve it
               if (!!this.columnMappings[key]) {
                 return this.columnMappings[key].map(function(item) {
@@ -75,7 +191,6 @@
             columns = [].concat.apply([], columns);
 
             /*
-              Make all columns sortable, hidable and resizable.
               If there is a renderer for a column, the renderer is
               attached here.
             */
@@ -83,14 +198,10 @@
               if (!!this.columnRenderers[col.name]) {
                 col.renderer = this.columnRenderers[col.name];
               }
-              col.sortable = true;
-              col.hidable = true;
-              col.resizable = true;
               return col;
             }.bind(this));
 
-            // Flatten the columns and assign data
-            this.$.grid.columns = columns;
+            this.columns = columns;
             this.data = data;
             this.$.grid.hidden = false;
           } else {
@@ -101,7 +212,7 @@
         _filter: function(data, filterString) {
           if (!filterString) return data;
           var result = data.filter(function(entry) {
-            return this._check(entry, filterString.toLowerCase())
+            return this._check(entry, filterString.toLowerCase());
           }.bind(this));
           return result;
         },
@@ -117,7 +228,7 @@
           }
           return false;
         }
-     });
+      });
     })();
   </script>
 </dom-module>

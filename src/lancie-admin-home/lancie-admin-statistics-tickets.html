@@ -5,7 +5,7 @@
 <dom-module id="lancie-admin-statistics-tickets">
   <template>
     <style>
-      :host {
+       :host {
         display: block;
       }
     </style>
@@ -20,58 +20,58 @@
 
   </template>
   <script>
-  'use strict';
+    (function () {
+      'use strict';
 
-  (function() {
-    Polymer({
-      is: 'lancie-admin-statistics-tickets',
-      properties: {
-        totalSold: String,
-        data: {
-          type: Array,
-          value: function() {
-            return [];
+      Polymer({
+        is: 'lancie-admin-statistics-tickets',
+        properties: {
+          totalSold: String,
+          data: {
+            type: Array,
+            value: function () {
+              return [];
+            },
           },
         },
-      },
 
-      onTickets: function(e, request) {
-        if (request.succeeded) {
-          this.calculateTicketsOnProperty(request.response);
-          this.totalSold = request.response.filter(function(t) {return t.valid;}).length;
-        } else {
-          this.fire('toast', {text: 'Unable to retrieve tickets.'})
-        }
-      },
+        onTickets: function (e, request) {
+          if (request.succeeded) {
+            this.calculateTicketsOnProperty(request.response);
+            this.totalSold = request.response.filter(function (t) { return t.valid; }).length;
+          } else {
+            this.fire('toast', { text: 'Unable to retrieve tickets.' });
+          }
+        },
 
-      calculateTicketsOnProperty: function(tickets) {
-        var buckets = tickets.reduce(function(buckets, t) {
-          if (!t.valid) return buckets;
+        calculateTicketsOnProperty: function (tickets) {
+          var buckets = tickets.reduce(function (buckets, t) {
+            if (!t.valid) return buckets;
 
-          // Increment buckets for the type and options for the ticket
-          buckets = this._incrementBucket(buckets, t.type.text);
-          buckets = t.enabledOptions.reduce(function(buckets, o){
-            return this._incrementBucket(buckets, o.name);
-          }.bind(this), buckets);
-          return buckets;
-        }.bind(this), {});
+            // Increment buckets for the type and options for the ticket
+            buckets = this._incrementBucket(buckets, t.type.text);
+            buckets = t.enabledOptions.reduce(function (buckets, o) {
+              return this._incrementBucket(buckets, o.name);
+            }.bind(this), buckets);
+            return buckets;
+          }.bind(this), {});
 
-        var data = [];
-        for (var key in buckets) {
-          data.push({key: key, value: buckets[key]});
-        }
-        this.data = data;
-      },
+          var data = [];
+          for (var key in buckets) {
+            data.push({ key: key, value: buckets[key] });
+          }
+          this.data = data;
+        },
 
-      _incrementBucket: function(bucket, property) {
-        if (!bucket[property]) {
-          bucket[property] = 1;
-        } else {
-          bucket[property]++;
-        }
-        return bucket;
-      },
-    });
-  })();
+        _incrementBucket: function (bucket, property) {
+          if (!bucket[property]) {
+            bucket[property] = 1;
+          } else {
+            bucket[property]++;
+          }
+          return bucket;
+        },
+      });
+    })();
   </script>
 </dom-module>

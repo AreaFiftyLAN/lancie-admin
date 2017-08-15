@@ -31,6 +31,7 @@
         is: 'lancie-admin-tickets',
         properties: {
           data: Object,
+          endpoint: String,
           mappings: {
             type: Object,
             value: function() {
@@ -44,11 +45,11 @@
             type: Object,
             value: function() {
               return {
-                enabledOptions: function(cell) {
-                  var text = cell.data.reduce(function(text, o){
+                enabledOptions: function(data) {
+                  var text = data.reduce(function(text, o){
                     return text + o.name + ', ';
                   }, '');
-                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                  return text.substr(0, text.length - 2);
                 },
               };
             }
