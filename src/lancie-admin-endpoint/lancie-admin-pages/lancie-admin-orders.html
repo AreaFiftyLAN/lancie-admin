@@ -43,11 +43,11 @@
             type: Object,
             value: function() {
               return {
-                tickets: function(cell) {
-                  var text = cell.data.reduce(function(text, t) {
+                tickets: function(data) {
+                  var text = data.reduce(function(text, t) {
                     return text + t.id + ', ';
                   }, '');
-                  cell.element.innerHTML = text.substr(0, text.length - 2);
+                  return text.substr(0, text.length - 2);
                 },
               };
             }
