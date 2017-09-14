@@ -1,0 +1,56 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
+
+<dom-module id="lancie-admin-committee-member">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .delete-button {
+        cursor: pointer;
+      }
+    </style>
+
+    <lancie-ajax id="ajaxDeleteMember" method="DELETE" refurl="web/committee/[[member.position]]" on-response="handleResponse"></lancie-ajax>
+
+    <paper-item class="layout horizontal center justified wrap">
+      <div>[[member.name]]</div>
+      <div>[[member.function]]</div>
+      <iron-icon icon="[[member.icon]]"></iron-icon>
+      <div>[[member.position]]</div>
+      <iron-icon icon="icons:delete" on-tap="handleDelete" class="delete-button"></iron-icon>
+    </paper-item>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'lancie-admin-committee-member',
+        properties: {
+          member: Object
+        },
+
+        handleDelete: function() {
+            this.$.ajaxDeleteMember.generateRequest();
+        },
+
+        handleResponse: function(e, request) {
+          if (request.succeeded) {
+              this.fire('delete-member', this.member.position);
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>

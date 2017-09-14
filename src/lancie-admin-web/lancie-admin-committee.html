@@ -1,0 +1,65 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="./lancie-admin-committee-member.html">
+
+<dom-module id="lancie-admin-committee">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      @media(max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    </style>
+    <lancie-ajax auto refurl="web/committee" on-lancie-ajax="handleResponse"></lancie-ajax>
+    <paper-card heading="Committee">
+      <div class="card-content" on-delete-member="deleteMember">
+        <template is="dom-repeat" items="[[committee]]">
+          <lancie-admin-committee-member member="[[item]]"></lancie-admin-committee-member>
+        </template>
+      </div>
+      <div class="card-actions">
+        <paper-button>Add Member</paper-button>
+      </div>
+    </paper-card>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'lancie-admin-committee',
+        properties: {
+          committee: Object
+        },
+
+        deleteMember: function(e) {
+            this.committee = this.committee.filter(function(member) {
+              console.log(e, member);
+              return member.position !== e.detail;
+            }.bind(this));
+        },
+
+        handleResponse: function(e, request) {
+          if (request.succeeded) {
+            console.log(request.response);
+            this.committee = request.response.object;
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>

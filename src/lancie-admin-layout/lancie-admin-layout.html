@@ -78,6 +78,10 @@
         border-radius: 5px;
         padding: 5px;
       }
+
+      .web {
+        border-top: 1px solid #e8e8e8;
+      }
     </style>
 
 
@@ -125,6 +129,10 @@
               <iron-icon icon="lancie-admin:mail" slot="item-icon"></iron-icon>
               <a href="/mail">Mail</a>
             </paper-icon-item>
+            <paper-icon-item class="web" data-route="web">
+              <iron-icon icon="cloud" slot="item-icon"></iron-icon>
+              <a href="/web">Web</a>
+            </paper-icon-item>
             <paper-icon-item class="rfid" data-route="rfidassign">
               <iron-icon icon="lancie-admin:nfc" slot="item-icon"></iron-icon>
               <a href="/rfidassign">Assign RFID</a>
@@ -153,7 +161,7 @@
       <app-header-layout id="headerLayout" fullbleed>
         <app-header fixed effects="waterfall" slot="header">
           <app-toolbar class="layout horizontal">
-          <paper-icon-button class="menu-button" icon="lancie-admin:menu" hidden$="[[wideLayout]]" drawer-toggle></paper-icon-button>
+            <paper-icon-button class="menu-button" icon="lancie-admin:menu" hidden$="[[wideLayout]]" drawer-toggle></paper-icon-button>
             <div main-title>[[_getTitle(route)]]</div>
           </app-toolbar>
         </app-header>
