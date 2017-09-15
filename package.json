@@ -18,7 +18,7 @@
     "polymer-build": "^2.0.0",
     "polyserve": "^0.20.0",
     "superagent": "^3.2.1",
-    "babel-minify": "^0.2.0",
+    "gulp-babel-minify": "^0.2.0",
     "gulp-imagemin": "^3.3.0"
   },
   "scripts": {
