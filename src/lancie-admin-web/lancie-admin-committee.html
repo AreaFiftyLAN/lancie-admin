@@ -38,6 +38,7 @@
     <lancie-ajax id="addCommitteeMember" refurl="web/committee" method="POST" on-lancie-ajax="handleAddResponse"></lancie-ajax>
     <paper-card heading="Committee">
       <div class="card-content" on-delete-member="deleteMember">
+        <lancie-error id="committeeError"></lancie-error>
         <template is="dom-repeat" items="[[committee]]">
           <lancie-admin-committee-member member="[[item]]"></lancie-admin-committee-member>
         </template>
@@ -77,15 +78,15 @@
 
         deleteMember: function(e) {
             this.committee = this.committee.filter(function(member) {
-              console.log(e, member);
               return member.position !== e.detail;
             }.bind(this));
         },
 
         handleResponse: function(e, request) {
           if (request.succeeded) {
-            console.log(request.response);
             this.committee = request.response.object;
+          } else {
+            this.$.committeeError.setError('Could not retrieve committee. Please refresh and try again.')
           }
         },
 
