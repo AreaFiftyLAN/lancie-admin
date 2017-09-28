@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/lancie-form/lancie-form.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
@@ -51,11 +52,13 @@
     <lancie-dialog id="addCommitteeMemberDialog">
       <h2>Add committee member</h2>
       <div class="dialog-content">
-        <lancie-error id="addDialogError"></lancie-error>
-        <paper-input label="Name" id="addName"></paper-input>
-        <paper-input label="Function" id="addFunction"></paper-input>
-        <paper-input label="Position" auto-validate error-message="Numbers only!" pattern="[0-9]*" id="addPosition"></paper-input>
-        <paper-input label="Icon" id="addIcon"></paper-input>
+        <lancie-error id="error"></lancie-error>
+        <lancie-form id="addMemberForm">
+          <paper-input label="Name" name="name" auto-validate required></paper-input>
+          <paper-input label="Function" name="function" auto-validate required></paper-input>
+          <paper-input label="Position" name="position" error-message="Numbers only!" auto-validate pattern="[0-9]*" required></paper-input>
+          <paper-input label="Icon" name="icon" auto-validate required></paper-input>
+        </lancie-form>
         <a href="https://www.webcomponents.org/element/PolymerElements/iron-icons/demo/demo/index.html"
            target="_blank" rel="noopener noreferrer">
           Iron icons list
@@ -63,7 +66,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="handleAdd" class="blue">Save</paper-button>
+        <paper-button on-tap="addMember" class="blue">Save</paper-button>
       </div>
     </lancie-dialog>
   </template>
@@ -91,33 +94,20 @@
         },
 
         openAddCommitteeMemberDialog: function() {
-          this.$.addName.value = "";
-          this.$.addFunction.value = "";
-          this.$.addPosition.value = "";
-          this.$.addIcon.value = "";
+          this.$.addMemberForm.reset();
           this.$.addCommitteeMemberDialog.open();
         },
 
-        handleAdd: function() {
-          this.$.addDialogError.clear();
-          let addName = this.$.addName.value,
-              addFunction = this.$.addFunction.value,
-              addPosition = this.$.addPosition.value,
-              addIcon = this.$.addIcon.value;
-          this.$.addCommitteeMember.body = {
-              'name': addName,
-              'function': addFunction,
-              'position': addPosition,
-              'icon': addIcon
-          };
-          this.$.addCommitteeMember.generateRequest();
+        addMember: function() {
+          this.$.error.clear();
+          this.$.addMemberForm.validateAndSubmit();
         },
 
         handleAddResponse: function(e, request) {
             if (request.succeeded) {
                 this.$.addCommitteeMemberDialog.close();
             } else {
-                this.$.addDialogError.setError("Could not add member. Please refresh and try again.")
+                this.$.error.setError("Could not add member. Please refresh and try again.")
             }
         }
       });
