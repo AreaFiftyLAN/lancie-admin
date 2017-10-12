@@ -25,39 +25,19 @@
         cursor: pointer;
       }
 
-      [hidden] {
-        display: none !important;
-      }
-
-      .red {
-        background-color: #E53935;
-        color: #fff
+      paper-item {
+        border-bottom: 1px solid var(--primary-color);
       }
     </style>
 
-    <lancie-ajax id="ajaxDeleteMember" method="DELETE" refurl="web/committee/[[member.position]]" on-lancie-ajax="handleDeleteResponse"></lancie-ajax>
-
-    <paper-item class="layout horizontal center justified wrap">
+    <paper-item class="layout horizontal justified wrap">
       <div>[[member.name]]</div>
       <div>
         <iron-icon icon="[[member.icon]]"></iron-icon>[[member.function]]
       </div>
       <div>[[member.position]]</div>
-      <iron-icon icon="icons:delete" on-tap="openDeleteCommitteeMemberConfirmDialog" class="delete-button"></iron-icon>
+      <iron-icon icon="icons:delete" on-tap="deleteMemberDialog" class="delete-button"></iron-icon>
     </paper-item>
-
-    <lancie-dialog id="deleteCommitteeMemberDialogConfirm">
-      <h2>Confirm deletion</h2>
-      <div class="dialog-content">
-        <lancie-error id="dialogError"></lancie-error>
-        <h4>Are you certain you want to delete this committee member?</h4>
-        <p>[[member.name]]</p>
-      </div>
-      <div class="dialog-actions">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="handleDelete" class="red">Confirm</paper-button>
-      </div>
-    </lancie-dialog>
 
   </template>
   <script>
@@ -69,21 +49,8 @@
           member: Object
         },
 
-        openDeleteCommitteeMemberConfirmDialog: function() {
-          this.$.deleteCommitteeMemberDialogConfirm.open();
-        },
-
-        handleDelete: function() {
-          this.$.ajaxDeleteMember.generateRequest();
-        },
-
-        handleDeleteResponse: function(e, request) {
-          if (request.succeeded) {
-            this.fire('delete-member', this.member.position);
-            this.$.deleteCommitteeMemberDialogConfirm.close();
-          } else {
-            this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
-          }
+        deleteMemberDialog: function() {
+            this.fire('delete-member-dialog', this.member.position);
         }
       });
     })();
