@@ -3,12 +3,14 @@
 <link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
 
 <link rel="import" href="../lancie-admin-page-layout.html">
-<link rel="import" href="../../lancie-admin-banner/lancie-admin-banner-scheduler.html">
 <link rel="import" href="../../lancie-admin-icons.html">
+
+<link rel="import" href="../../lancie-admin-banner/lancie-admin-banner-scheduler.html">
+<link rel="import" href="../../lancie-admin-banner/lancie-admin-timeline-style.html">
 
 <dom-module id="lancie-admin-hptext">
   <template>
-    <style>
+    <style include="lancie-admin-timeline-style">
       :host {
         display: block;
       }
@@ -17,15 +19,20 @@
         margin-top: 32px;
       }
 
-      lancie-admin-banner-scheduler:first-of-type {
-        margin-top: 64px;
-      }
-
       /*
       Reserve some space under the last element for the paper fab
       */
       lancie-admin-banner-scheduler:last-of-type {
         margin-bottom: 64px;
+      }
+
+      .scheduler-container {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+      }
+
+      .scheduler-container lancie-admin-banner-scheduler {
+        margin-right: 64px;
       }
 
       paper-fab {
@@ -51,9 +58,25 @@
       <p>Here is where you will be able to schedule the text of the banner.</p>
       <p>Requests will be on <code>/api/v1/web/banners</code></p>
 
-      <template is="dom-repeat" items="[[banners]]">
-        <lancie-admin-banner-scheduler banner="{{item}}"></lancie-admin-banner-scheduler>
-      </template>
+      <div class="timeline-container">
+        <ul>
+          <template is="dom-repeat" items="{{banners}}">
+            <li><span></span>
+              <div>
+                <div class="text">{{item.text}}</div>
+              </div>
+              <span class="number"><span>{{item.startDate}}</span> <span>{{item.endDate}}</span></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+
+      <div class="scheduler-container">
+        <template is="dom-repeat" items="{{banners}}">
+          <lancie-admin-banner-scheduler banner="{{item}}"></lancie-admin-banner-scheduler>
+        </template>
+      </div>
+
       <paper-fab icon="lancie-admin:add" on-tap="addBanner"></paper-fab>
     </lancie-admin-page-layout>
   </template>
