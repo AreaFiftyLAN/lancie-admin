@@ -13,13 +13,17 @@ the banner within that timeframe-->
         display: block;
       }
 
-      .container {
+      .input-container {
         @apply --layout-horizontal;
       }
 
       paper-input {
-        width: 200px;
+        max-width: 200px;
         margin-right: 16px;
+      }
+
+      paper-textarea {
+        max-width: 400px;
       }
 
       paper-button {
@@ -48,17 +52,21 @@ the banner within that timeframe-->
     <lancie-ajax id="deleteBannerAjax" refurl="web/banners/[[banner.id]]" method="DELETE"
                  on-lancie-ajax="onDelete"></lancie-ajax>
 
-    <div class="container">
-      <paper-input label="Start date" name="start-date" type="date" placeholder="YYYY-MM-DD"
+    <div class="input-container">
+      <paper-input id="startDate" label="Start date" name="start-date" type="date" placeholder="YYYY-MM-DD"
+                   min="[[today]]"
                    value="{{banner.startDate}}"
+                   error-message="The end date is before the start date"
                    required></paper-input>
-      <paper-input label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD" value="{{banner.endDate}}"
+      <paper-input id="endDate" label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD"
+                   min="[[today]]"
+                   value="{{banner.endDate}}"
                    required></paper-input>
     </div>
     <paper-textarea value="{{banner.text}}"></paper-textarea>
     <paper-button hidden$="[[banner.id]]" raised class="add" on-tap="addBanner">add</paper-button>
     <paper-button hidden$="[[!banner.id]]" raised class="update" on-tap="updateBanner">update</paper-button>
-    <paper-button hidden$="[[!banner.id]]" raised class="delete" on-tap="deleteBanner">delete</paper-button>
+    <paper-button raised class="delete" on-tap="deleteBanner">delete</paper-button>
   </template>
 
   <script>
@@ -70,27 +78,57 @@ the banner within that timeframe-->
       static get properties() {
         return {
           banner: Object,
+          today: Date,
         };
       }
 
+      constructor() {
+        super();
+        this.today = (new Date()).toISOString().slice(0, 10);
+      }
+
+      static get observers() {
+        return ['_bannerChanged(banner.*)'];
+      }
+
+      _bannerChanged(banner) {
+        const startDate = this.banner.startDate;
+        const endDate = this.banner.endDate;
+        this.$.startDate.invalid = endDate < startDate;
+      }
+
       addBanner() {
-        this.$.addBannerAjax.generateRequest();
+        this.validateAndRequest(this.$.addBannerAjax.generateRequest);
       }
 
       updateBanner() {
-        this.$.updateBannerAjax.generateRequest();
+        this.validateAndRequest(this.$.updateBannerAjax.generateRequest);
+      }
+
+      validateAndRequest(request) {
+        if (!this.$.startDate.invalid)
+          request();
+        else
+          this._fireToast('Make sure the dates are valid!');
       }
 
       deleteBanner() {
-        this.$.deleteBannerAjax.generateRequest();
+        if (this.banner.id)
+          this.$.deleteBannerAjax.generateRequest();
+        else {
+          this.dispatchEvent(new CustomEvent('banner-removed', {
+            bubbles: true, composed: true,
+          }));
+        }
       }
 
       // used for both an add and an update
       onAdd(e, req) {
         if (req.succeeded) {
           this.banner = req.response.object;
+          this._fireToast(req.response.message);
         }
-        this._fireToast(req.response.message);
+        this._fireToast("Request failed!");
       }
 
       onDelete(e, req) {
