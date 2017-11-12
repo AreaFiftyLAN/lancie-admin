@@ -22,8 +22,8 @@
     "iron-icon": "PolymerElements/iron-icon#^2.0.0",
     "iron-input": "PolymerElements/iron-input#^2.0.0",
     "iron-icons": "PolymerElements/iron-icons#^2.0.0",
-
-    "vaadin-grid": "vaadin/vaadin-grid#^3.0.0"
+    "vaadin-grid": "vaadin/vaadin-grid#^3.0.0",
+    "paper-fab": "PolymerElements/paper-fab#^2.0.0"
   },
   "devDependencies": {
     "web-component-tester": "*",
