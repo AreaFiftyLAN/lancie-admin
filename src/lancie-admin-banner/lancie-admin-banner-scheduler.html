@@ -23,7 +23,13 @@ the banner within that timeframe-->
       }
 
       paper-textarea {
-        max-width: 400px;
+        width: 400px;
+      }
+
+      @media screen and (max-width: 420px) {
+        paper-textarea {
+          max-width: 350px;
+        }
       }
 
       paper-button {
