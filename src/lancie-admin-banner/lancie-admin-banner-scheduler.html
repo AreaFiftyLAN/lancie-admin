@@ -1,0 +1,117 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--Element that makes it possible to schedule banners by providing start- and enddates and a corresponding text for
+the banner within that timeframe-->
+<dom-module id="lancie-admin-banner-scheduler">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-horizontal;
+      }
+
+      paper-input {
+        width: 200px;
+        margin-right: 16px;
+      }
+
+      paper-button {
+        margin-top: 16px;
+        color: white;
+      }
+
+      paper-button.add {
+        background-color: var(--paper-green-500);
+      }
+
+      paper-button.update {
+        background-color: var(--lancie-button-color);
+      }
+
+      paper-button.delete {
+        background-color: var(--paper-red-500);
+      }
+
+    </style>
+
+    <lancie-ajax id="addBannerAjax" refurl="web/banners" method="POST" body="[[banner]]"
+                 on-lancie-ajax="onAdd"></lancie-ajax>
+    <lancie-ajax id="updateBannerAjax" refurl="web/banners/[[banner.id]]" method="POST" body="[[banner]]"
+                 on-lancie-ajax="onAdd"></lancie-ajax>
+    <lancie-ajax id="deleteBannerAjax" refurl="web/banners/[[banner.id]]" method="DELETE"
+                 on-lancie-ajax="onDelete"></lancie-ajax>
+
+    <div class="container">
+      <paper-input label="Start date" name="start-date" type="date" placeholder="YYYY-MM-DD"
+                   value="{{banner.startDate}}"
+                   required></paper-input>
+      <paper-input label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD" value="{{banner.endDate}}"
+                   required></paper-input>
+    </div>
+    <paper-textarea value="{{banner.text}}"></paper-textarea>
+    <paper-button hidden$="[[banner.id]]" raised class="add" on-tap="addBanner">add</paper-button>
+    <paper-button hidden$="[[!banner.id]]" raised class="update" on-tap="updateBanner">update</paper-button>
+    <paper-button hidden$="[[!banner.id]]" raised class="delete" on-tap="deleteBanner">delete</paper-button>
+  </template>
+
+  <script>
+    class LancieAdminBannerScheduler extends Polymer.Element {
+      static get is() {
+        return 'lancie-admin-banner-scheduler';
+      }
+
+      static get properties() {
+        return {
+          banner: Object,
+        };
+      }
+
+      addBanner() {
+        this.$.addBannerAjax.generateRequest();
+      }
+
+      updateBanner() {
+        this.$.updateBannerAjax.generateRequest();
+      }
+
+      deleteBanner() {
+        this.$.deleteBannerAjax.generateRequest();
+      }
+
+      // used for both an add and an update
+      onAdd(e, req) {
+        if (req.succeeded) {
+          this.banner = req.response.object;
+        }
+        this._fireToast(req.response.message);
+      }
+
+      onDelete(e, req) {
+        if (req.succeeded) {
+          this.banner = {};
+          this.dispatchEvent(new CustomEvent('banner-removed', {
+            bubbles: true, composed: true,
+          }));
+        }
+        this._fireToast(req.response.message);
+      }
+
+      _fireToast(message) {
+        this.dispatchEvent(new CustomEvent('toast', {
+          bubbles: true, composed: true,
+          detail: {text: message},
+        }));
+      }
+
+    }
+
+    customElements.define(LancieAdminBannerScheduler.is, LancieAdminBannerScheduler);
+  </script>
+</dom-module>

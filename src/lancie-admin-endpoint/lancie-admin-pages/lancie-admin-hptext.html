@@ -1,0 +1,99 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-banner/lancie-admin-banner-scheduler.html">
+<link rel="import" href="../../lancie-admin-icons.html">
+
+<dom-module id="lancie-admin-hptext">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      lancie-admin-banner-scheduler {
+        margin-top: 32px;
+      }
+
+      lancie-admin-banner-scheduler:first-of-type {
+        margin-top: 64px;
+      }
+
+      /*
+      Reserve some space under the last element for the paper fab
+      */
+      lancie-admin-banner-scheduler:last-of-type {
+        margin-bottom: 64px;
+      }
+
+      paper-fab {
+        position: absolute;
+        right: 24px;
+        bottom: 24px;
+        --paper-fab-background: var(--lancie-button-color);
+      }
+
+      /*TODO: Should be in global scope*/
+      code {
+        color: #D72B3F;
+        background: #F7F7F9;
+        border-radius: 5px;
+        padding: 5px;
+      }
+
+    </style>
+
+    <lancie-ajax auto-fire id="bannersAjax" refurl="web/banners" last-response="{{banners}}"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="banner" on-banner-removed="refreshBanners">
+      <p>Here is where you will be able to schedule the text of the banner.</p>
+      <p>Requests will be on <code>/api/v1/web/banners</code></p>
+
+      <template is="dom-repeat" items="[[banners]]">
+        <lancie-admin-banner-scheduler banner="{{item}}"></lancie-admin-banner-scheduler>
+      </template>
+      <paper-fab icon="lancie-admin:add" on-tap="addBanner"></paper-fab>
+    </lancie-admin-page-layout>
+  </template>
+
+  <script>
+    class LancieAdminHpText extends Polymer.Element {
+      static get is() {
+        return 'lancie-admin-hptext';
+      }
+
+      // TODO: Remove hardcoded value
+      static get properties() {
+        return {
+          banners: {
+            type: Array,
+            value: [{
+              id: 1,
+              startDate: "2017-11-11",
+              endDate: "2017-11-12",
+              text: "Welcome to AreaFiftyLAN",
+            },
+              {
+                startDate: "2017-11-12",
+                endDate: "2017-11-13",
+                text: "One week before we start!",
+              }],
+          },
+        };
+      }
+
+      addBanner() {
+        this.push('banners', {});
+      }
+
+      refreshBanners() {
+        this.$.bannersAjax.generateRequest();
+      }
+
+    }
+
+    customElements.define(LancieAdminHpText.is, LancieAdminHpText);
+  </script>
+</dom-module>
