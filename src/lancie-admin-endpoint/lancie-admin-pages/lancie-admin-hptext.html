@@ -64,23 +64,9 @@
         return 'lancie-admin-hptext';
       }
 
-      // TODO: Remove hardcoded value
       static get properties() {
         return {
-          banners: {
-            type: Array,
-            value: [{
-              id: 1,
-              startDate: "2017-11-11",
-              endDate: "2017-11-12",
-              text: "Welcome to AreaFiftyLAN",
-            },
-              {
-                startDate: "2017-11-12",
-                endDate: "2017-11-13",
-                text: "One week before we start!",
-              }],
-          },
+          banners: Array,
         };
       }
 
