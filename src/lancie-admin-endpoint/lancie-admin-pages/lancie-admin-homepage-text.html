@@ -1,6 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
-<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
 
@@ -49,15 +48,12 @@
         margin-left: -1px;
       }
 
-      paper-fab {
-        position: absolute;
-        right: 24px;
-        bottom: 24px;
-        --paper-fab-background: var(--lancie-button-color);
+      paper-button.add {
+        background-color: var(--lancie-button-color);
+        color: white;
       }
 
       /*TODO: Should be in global scope*/
-
       code {
         color: #D72B3F;
         background: #F7F7F9;
@@ -92,7 +88,8 @@
         </ul>
       </div>
 
-      <paper-button id="remove-banners" raised on-tap="_openRemoveBannersDialog">REMOVE ALL</paper-button>
+      <paper-button id="remove-banners" raised on-tap="_openRemoveBannersDialog">Remove all</paper-button>
+      <paper-button class="add" raised on-tap="addBanner">Add</paper-button>
 
       <paper-dialog id="removeBannersDialog" entry-animation="scale-up-animation"
                     exit-animation="fade-out-animation">
@@ -110,7 +107,6 @@
         </template>
       </div>
 
-      <paper-fab icon="lancie-admin:add" on-tap="addBanner"></paper-fab>
     </lancie-admin-page-layout>
   </template>
 
@@ -128,6 +124,11 @@
 
       static get observers() {
         return ['_bannersChanged(banners)'];
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        document.body.appendChild(this.$.removeBannersDialog);
       }
 
       _bannersChanged(banners) {

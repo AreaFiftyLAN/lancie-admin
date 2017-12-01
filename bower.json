@@ -20,7 +20,6 @@
     "iron-input": "PolymerElements/iron-input#^2.0.0",
     "iron-icons": "PolymerElements/iron-icons#^2.0.0",
     "vaadin-grid": "vaadin/vaadin-grid#^3.0.0",
-    "paper-fab": "PolymerElements/paper-fab#^2.0.0",
     "paper-icon-button": "polymerelements/paper-icon-button#^2.0.1",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0"
   },
