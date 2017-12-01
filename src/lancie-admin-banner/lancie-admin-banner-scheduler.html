@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <!--Element that makes it possible to schedule banners by providing start- and enddates and a corresponding text for
@@ -22,6 +23,10 @@ the banner within that timeframe-->
       paper-input {
         max-width: 200px;
         margin-right: 16px;
+
+        --paper-input-error: {
+          white-space: normal;
+        };
       }
 
       @media screen and (min-width: 700px) {
@@ -33,6 +38,12 @@ the banner within that timeframe-->
 
       paper-icon-button.add {
         color: var(--paper-green-500);
+      }
+
+      paper-button.update {
+        background-color: var(--lancie-button-color);
+        color: white;
+        max-height: 50px;
       }
     </style>
 
@@ -53,7 +64,7 @@ the banner within that timeframe-->
       <paper-textarea label="Banner text" value="{{banner.text}}"></paper-textarea>
       <paper-icon-button icon="lancie-admin:add" class="add" hidden$="[[banner.id]]"
                          on-tap="addBanner"></paper-icon-button>
-      <paper-icon-button icon="lancie-admin:create" hidden$="[[!banner.id]]" on-tap="updateBanner"></paper-icon-button>
+      <paper-button raised id="updateButton" class="update" hidden on-tap="updateBanner">Update</paper-button>
       <paper-icon-button icon="lancie-admin:delete" on-tap="deleteBanner"></paper-icon-button>
     </div>
   </template>
@@ -81,9 +92,12 @@ the banner within that timeframe-->
       }
 
       _bannerChanged(banner) {
+        if (!this.isConnected)
+          return;
         const startDate = this.banner.startDate;
         const endDate = this.banner.endDate;
         this.$.startDate.invalid = endDate < startDate;
+        this.$.updateButton.hidden = false;
       }
 
       addBanner() {
@@ -124,6 +138,7 @@ the banner within that timeframe-->
         } else {
           this._fireToast("Request failed!");
         }
+        this.$.updateButton.hidden = true;
       }
 
       onDelete(e, req) {
