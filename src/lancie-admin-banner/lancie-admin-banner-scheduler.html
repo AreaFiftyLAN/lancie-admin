@@ -67,13 +67,13 @@ the banner within that timeframe-->
       static get properties() {
         return {
           banner: Object,
-          today: Date,
+          today: {
+            type: Date,
+            value: () => {
+              return (new Date()).toISOString().slice(0, 10);
+            },
+          },
         };
-      }
-
-      constructor() {
-        super();
-        this.today = (new Date()).toISOString().slice(0, 10);
       }
 
       static get observers() {
@@ -87,31 +87,23 @@ the banner within that timeframe-->
       }
 
       addBanner() {
-        if (!this.$.startDate.invalid) {
-          this.$.addBannerAjax.generateRequest();
-        }
-        else {
-          this._fireToast('Make sure the dates are valid!');
-        }
-        //        this.validateAndRequest(this.$.addBannerAjax.generateRequest);
+        if (this.startDateInvalid())
+          return;
+        this.$.addBannerAjax.generateRequest();
       }
 
       updateBanner() {
-        if (!this.$.startDate.invalid) {
-          this.$.updateBannerAjax.generateRequest();
-        }
-        else {
-          this._fireToast('Make sure the dates are valid!');
-        }
+        if (this.startDateInvalid())
+          return;
+        this.$.updateBannerAjax.generateRequest();
       }
 
-      validateAndRequest(request) {
-        if (!this.$.startDate.invalid) {
-          request();
-        }
-        else {
+      startDateInvalid() {
+        if (this.$.startDate.invalid) {
           this._fireToast('Make sure the dates are valid!');
+          return true;
         }
+        return false;
       }
 
       deleteBanner() {
