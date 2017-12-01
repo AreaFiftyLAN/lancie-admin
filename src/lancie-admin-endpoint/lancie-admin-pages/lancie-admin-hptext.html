@@ -1,6 +1,12 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+
+<link rel="import" href="../../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/fade-out-animation.html">
 
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-icons.html">
@@ -22,6 +28,7 @@
       /*
       Reserve some space under the last element for the paper fab
       */
+
       lancie-admin-banner-scheduler:last-of-type {
         margin-bottom: 64px;
       }
@@ -35,6 +42,12 @@
         margin-right: 64px;
       }
 
+      #remove-banners {
+        margin-top: 16px;
+        background-color: var(--paper-red-a200);
+        color: white;
+      }
+
       paper-fab {
         position: absolute;
         right: 24px;
@@ -43,33 +56,52 @@
       }
 
       /*TODO: Should be in global scope*/
+
       code {
         color: #D72B3F;
         background: #F7F7F9;
         border-radius: 5px;
         padding: 5px;
       }
-
     </style>
 
     <lancie-ajax auto-fire id="bannersAjax" refurl="web/banners" last-response="{{banners}}"></lancie-ajax>
+    <lancie-ajax id="deleteBannersAjax" refurl="web/banners" method="DELETE"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="banner" on-banner-removed="refreshBanners">
       <p>Here is where you will be able to schedule the text of the banner.</p>
-      <p>Requests will be on <code>/api/v1/web/banners</code></p>
+      <p>Requests will be on
+        <code>/api/v1/web/banners</code>
+      </p>
 
       <div class="timeline-container">
         <ul>
           <template is="dom-repeat" items="{{banners}}">
-            <li><span></span>
+            <li>
+              <span></span>
               <div>
                 <div class="text">{{item.text}}</div>
               </div>
-              <span class="number"><span>{{item.startDate}}</span> <span>{{item.endDate}}</span></span>
+              <span class="number">
+                <span>{{item.startDate}}</span>
+                <span>{{item.endDate}}</span>
+              </span>
             </li>
           </template>
         </ul>
       </div>
+
+      <paper-button id="remove-banners" raised on-tap="_openRemoveBannersDialog">REMOVE ALL</paper-button>
+
+      <paper-dialog id="removeBannersDialog" entry-animation="scale-up-animation"
+                    exit-animation="fade-out-animation">
+        <h2>Remove all scheduled banners</h2>
+        <p>Are you sure that you want to remove all scheduled banners?</p>
+        <div class="buttons">
+          <paper-button dialog-dismiss>No</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="_removeBanners">Yes, I am sure!</paper-button>
+        </div>
+      </paper-dialog>
 
       <div class="scheduler-container">
         <template is="dom-repeat" items="{{banners}}">
@@ -94,11 +126,35 @@
       }
 
       addBanner() {
-        this.push('banners', {});
+        let latest = this.getLatestDate();
+        this.push('banners', {startDate: latest, endDate: latest});
       }
 
       refreshBanners() {
         this.$.bannersAjax.generateRequest();
+        this.sortOnStartDate();
+      }
+
+      sortOnStartDate() {
+        this.banners.sort((x, y) => x.startDate - y.startDate);
+      }
+
+      getLatestDate() {
+        if (this.banners.length > 0) {
+          this.banners.sort((x, y) => x.startDate - y.startDate);
+          return this.banners[this.banners.length - 1].endDate;
+        } else {
+          return (new Date()).toISOString().slice(0, 10);
+        }
+      }
+
+      _openRemoveBannersDialog() {
+        this.$.removeBannersDialog.open();
+      }
+
+      _removeBanners() {
+        this.$.deleteBannersAjax.generateRequest();
+        this.banners = [];
       }
 
     }
