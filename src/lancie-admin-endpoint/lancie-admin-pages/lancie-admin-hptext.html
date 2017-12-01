@@ -125,27 +125,54 @@
         };
       }
 
+      static get observers() {
+        return ['_bannersChanged(banners)'];
+      }
+
+      _bannersChanged(banners) {
+        this.banners = this.banners.sort((x, y) => (new Date(x.startDate) - new Date(y.startDate)));
+      }
+
       addBanner() {
-        let latest = this.getLatestDate();
-        this.push('banners', {startDate: latest, endDate: latest});
+        this.push('banners', this.createNewBanner());
       }
 
       refreshBanners() {
         this.$.bannersAjax.generateRequest();
-        this.sortOnStartDate();
       }
 
-      sortOnStartDate() {
-        this.banners.sort((x, y) => x.startDate - y.startDate);
-      }
-
-      getLatestDate() {
-        if (this.banners.length > 0) {
-          this.banners.sort((x, y) => x.startDate - y.startDate);
-          return this.banners[this.banners.length - 1].endDate;
-        } else {
-          return (new Date()).toISOString().slice(0, 10);
+      /**
+       * Creates a new banner by evaluating the already existing banners on the range they cover, and tries to fit
+       * new date ranges that aren't covered yet
+       * @returns {*} an object that's a starting point for a banner, with calculated date ranges
+       */
+      createNewBanner() {
+        if (this.banners.length === 0) {
+          return {startDate: this.today, endDate: this.today};
         }
+
+        let curr = new Date(this.banners[0].endDate);
+        curr.setDate(curr.getDate() + 1);
+
+        for (let i = 1; i < this.banners.length; i++) {
+          if (curr.valueOf() === new Date(this.banners[i].startDate).valueOf()) {
+            curr = new Date(this.banners[i].endDate);
+            curr.setDate(curr.getDate() + 1);
+          }
+          else {
+            curr = new Date(this.banners[i].endDate);
+            curr.setDate(curr.getDate() + 1);
+
+            if (i === this.banners.length - 1) {
+              let date = curr.toISOString().substr(0, 10);
+              return {startDate: date, endDate: date};
+            }
+            let end = new Date(this.banners[i + 1].startDate);
+            end.setDate(end.getDate() - 1);
+            return {startDate: curr.toISOString().substr(0, 10), endDate: end.toISOString().substr(0, 10)};
+          }
+        }
+
       }
 
       _openRemoveBannersDialog() {

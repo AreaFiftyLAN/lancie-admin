@@ -122,7 +122,7 @@ the banner within that timeframe-->
           this.banner = req.response.object;
           this._fireToast(req.response.message);
         } else {
-          this._fireToast("Request failed! Make sure none of the other scheduled banners cover that date already.");
+          this._fireToast("Request failed!");
         }
       }
 
