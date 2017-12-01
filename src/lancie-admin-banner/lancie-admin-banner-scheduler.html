@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <!--Element that makes it possible to schedule banners by providing start- and enddates and a corresponding text for
@@ -11,10 +11,12 @@ the banner within that timeframe-->
     <style>
       :host {
         display: block;
+
       }
 
       .input-container {
         @apply --layout-horizontal;
+        @apply --layout-wrap;
       }
 
       paper-input {
@@ -22,33 +24,16 @@ the banner within that timeframe-->
         margin-right: 16px;
       }
 
-      paper-textarea {
-        width: 400px;
-      }
-
-      @media screen and (max-width: 420px) {
+      @media screen and (min-width: 700px) {
         paper-textarea {
-          max-width: 350px;
+          width: 400px;
+          margin-left: 64px;
         }
       }
 
-      paper-button {
-        margin-top: 16px;
-        color: white;
+      paper-icon-button.add {
+        color: var(--paper-green-500);
       }
-
-      paper-button.add {
-        background-color: var(--paper-green-500);
-      }
-
-      paper-button.update {
-        background-color: var(--lancie-button-color);
-      }
-
-      paper-button.delete {
-        background-color: var(--paper-red-500);
-      }
-
     </style>
 
     <lancie-ajax id="addBannerAjax" refurl="web/banners" method="POST" body="[[banner]]"
@@ -60,19 +45,17 @@ the banner within that timeframe-->
 
     <div class="input-container">
       <paper-input id="startDate" label="Start date" name="start-date" type="date" placeholder="YYYY-MM-DD"
-                   min="[[today]]"
-                   value="{{banner.startDate}}"
-                   error-message="The end date is before the start date"
-                   required></paper-input>
-      <paper-input id="endDate" label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD"
-                   min="[[today]]"
+                   min="[[today]]" value="{{banner.startDate}}"
+                   error-message="The end date is before the start date" required></paper-input>
+      <paper-input id="endDate" label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD" min="[[today]]"
                    value="{{banner.endDate}}"
                    required></paper-input>
+      <paper-textarea label="Banner text" value="{{banner.text}}"></paper-textarea>
+      <paper-icon-button icon="lancie-admin:add" class="add" hidden$="[[banner.id]]"
+                         on-tap="addBanner"></paper-icon-button>
+      <paper-icon-button icon="lancie-admin:create" hidden$="[[!banner.id]]" on-tap="updateBanner"></paper-icon-button>
+      <paper-icon-button icon="lancie-admin:delete" on-tap="deleteBanner"></paper-icon-button>
     </div>
-    <paper-textarea value="{{banner.text}}"></paper-textarea>
-    <paper-button hidden$="[[banner.id]]" raised class="add" on-tap="addBanner">add</paper-button>
-    <paper-button hidden$="[[!banner.id]]" raised class="update" on-tap="updateBanner">update</paper-button>
-    <paper-button raised class="delete" on-tap="deleteBanner">delete</paper-button>
   </template>
 
   <script>
@@ -104,18 +87,31 @@ the banner within that timeframe-->
       }
 
       addBanner() {
-        this.validateAndRequest(this.$.addBannerAjax.generateRequest);
+        if (!this.$.startDate.invalid) {
+          this.$.addBannerAjax.generateRequest();
+        }
+        else {
+          this._fireToast('Make sure the dates are valid!');
+        }
+        //        this.validateAndRequest(this.$.addBannerAjax.generateRequest);
       }
 
       updateBanner() {
-        this.validateAndRequest(this.$.updateBannerAjax.generateRequest);
+        if (!this.$.startDate.invalid) {
+          this.$.updateBannerAjax.generateRequest();
+        }
+        else {
+          this._fireToast('Make sure the dates are valid!');
+        }
       }
 
       validateAndRequest(request) {
-        if (!this.$.startDate.invalid)
+        if (!this.$.startDate.invalid) {
           request();
-        else
+        }
+        else {
           this._fireToast('Make sure the dates are valid!');
+        }
       }
 
       deleteBanner() {
@@ -133,8 +129,9 @@ the banner within that timeframe-->
         if (req.succeeded) {
           this.banner = req.response.object;
           this._fireToast(req.response.message);
+        } else {
+          this._fireToast("Request failed! Make sure none of the other scheduled banners cover that date already.");
         }
-        this._fireToast("Request failed!");
       }
 
       onDelete(e, req) {
