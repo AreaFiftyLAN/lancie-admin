@@ -1,11 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
-
-<link rel="import" href="../../../bower_components/neon-animation/web-animations.html">
-<link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
 
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-icons.html">
@@ -24,13 +20,6 @@
         margin-top: 32px;
       }
 
-      /*
-      Reserve some space under the last element for the paper fab
-      */
-
-      lancie-admin-banner-scheduler:last-of-type {
-        margin-bottom: 64px;
-      }
 
       .scheduler-container {
         @apply(--layout-horizontal);
@@ -39,6 +28,10 @@
 
       .scheduler-container lancie-admin-banner-scheduler {
         margin-right: 64px;
+      }
+
+      .scheduler-container lancie-admin-banner-scheduler:last-of-type {
+        margin-bottom: 16px;
       }
 
       #remove-banners {
@@ -54,6 +47,7 @@
       }
 
       /*TODO: Should be in global scope*/
+
       code {
         color: #D72B3F;
         background: #F7F7F9;
@@ -91,15 +85,16 @@
       <paper-button id="remove-banners" raised on-tap="_openRemoveBannersDialog">Remove all</paper-button>
       <paper-button class="add" raised on-tap="addBanner">Add</paper-button>
 
-      <paper-dialog id="removeBannersDialog" entry-animation="scale-up-animation"
-                    exit-animation="fade-out-animation">
-        <h2>Remove all scheduled banners</h2>
-        <p>Are you sure that you want to remove all scheduled banners?</p>
-        <div class="buttons">
-          <paper-button dialog-dismiss>No</paper-button>
-          <paper-button dialog-confirm autofocus on-tap="_removeBanners">Yes, I am sure!</paper-button>
+      <lancie-dialog id="removeBannersDialog">
+        <div class="dialog-content">
+          <h2>Remove all scheduled banners</h2>
+          <p>Are you sure that you want to remove all scheduled banners?</p>
         </div>
-      </paper-dialog>
+        <div class="dialog-actions">
+          <paper-button dialog-dismiss>No</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="_removeBanners">Yes, I'm sure!</paper-button>
+        </div>
+      </lancie-dialog>
 
       <div class="scheduler-container">
         <template is="dom-repeat" items="{{banners}}">
@@ -150,7 +145,7 @@
        */
       createNewBanner() {
         if (this.banners.length === 0) {
-          return {startDate: this.today, endDate: this.today};
+          return { startDate: this.today, endDate: this.today };
         }
 
         let curr = new Date(this.banners[0].endDate);
@@ -167,11 +162,11 @@
 
             if (i === this.banners.length - 1) {
               let date = curr.toISOString().substr(0, 10);
-              return {startDate: date, endDate: date};
+              return { startDate: date, endDate: date };
             }
             let end = new Date(this.banners[i + 1].startDate);
             end.setDate(end.getDate() - 1);
-            return {startDate: curr.toISOString().substr(0, 10), endDate: end.toISOString().substr(0, 10)};
+            return { startDate: curr.toISOString().substr(0, 10), endDate: end.toISOString().substr(0, 10) };
           }
         }
 
