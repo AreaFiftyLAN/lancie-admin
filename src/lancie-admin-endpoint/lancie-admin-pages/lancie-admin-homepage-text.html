@@ -1,0 +1,188 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-icons.html">
+
+<link rel="import" href="../../lancie-admin-banner/lancie-admin-banner-scheduler.html">
+<link rel="import" href="../../lancie-admin-banner/lancie-admin-timeline-style.html">
+
+<dom-module id="lancie-admin-homepage-text">
+  <template>
+    <style include="lancie-admin-timeline-style">
+      :host {
+        display: block;
+      }
+
+      lancie-admin-banner-scheduler {
+        margin-top: 32px;
+      }
+
+
+      .scheduler-container {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+      }
+
+      .scheduler-container lancie-admin-banner-scheduler {
+        margin-right: 64px;
+      }
+
+      .scheduler-container lancie-admin-banner-scheduler:last-of-type {
+        margin-bottom: 16px;
+      }
+
+      #remove-banners {
+        margin-top: 16px;
+        background-color: var(--paper-red-a200);
+        color: white;
+        margin-left: -1px;
+      }
+
+      paper-button.add {
+        background-color: var(--lancie-button-color);
+        color: white;
+      }
+
+      /*TODO: Should be in global scope*/
+
+      code {
+        color: #D72B3F;
+        background: #F7F7F9;
+        border-radius: 5px;
+        padding: 5px;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="bannersAjax" refurl="web/banners" last-response="{{banners}}"></lancie-ajax>
+    <lancie-ajax id="deleteBannersAjax" refurl="web/banners" method="DELETE"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="banner" on-banner-removed="refreshBanners">
+      <p>Here is where you will be able to schedule the text of the banner.</p>
+      <p>Requests will be on
+        <code>/api/v1/web/banners</code>
+      </p>
+
+      <div class="timeline-container">
+        <ul>
+          <template is="dom-repeat" items="{{banners}}">
+            <li>
+              <span></span>
+              <div>
+                <div class="text">{{item.text}}</div>
+              </div>
+              <span class="number">
+                <span>{{item.startDate}}</span>
+                <span>{{item.endDate}}</span>
+              </span>
+            </li>
+          </template>
+        </ul>
+      </div>
+
+      <paper-button id="remove-banners" raised on-tap="_openRemoveBannersDialog">Remove all</paper-button>
+      <paper-button class="add" raised on-tap="addBanner">Add</paper-button>
+
+      <lancie-dialog id="removeBannersDialog">
+        <div class="dialog-content">
+          <h2>Remove all scheduled banners</h2>
+          <p>Are you sure that you want to remove all scheduled banners?</p>
+        </div>
+        <div class="dialog-actions">
+          <paper-button dialog-dismiss>No</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="_removeBanners">Yes, I'm sure!</paper-button>
+        </div>
+      </lancie-dialog>
+
+      <div class="scheduler-container">
+        <template is="dom-repeat" items="{{banners}}">
+          <lancie-admin-banner-scheduler banner="{{item}}"></lancie-admin-banner-scheduler>
+        </template>
+      </div>
+
+    </lancie-admin-page-layout>
+  </template>
+
+  <script>
+    class LancieAdminHomepageText extends Polymer.Element {
+      static get is() {
+        return 'lancie-admin-homepage-text';
+      }
+
+      static get properties() {
+        return {
+          banners: Array,
+        };
+      }
+
+      static get observers() {
+        return ['_bannersChanged(banners)'];
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        document.body.appendChild(this.$.removeBannersDialog);
+      }
+
+      _bannersChanged(banners) {
+        this.banners = this.banners.sort((x, y) => (new Date(x.startDate) - new Date(y.startDate)));
+      }
+
+      addBanner() {
+        this.push('banners', this.createNewBanner());
+      }
+
+      refreshBanners() {
+        this.$.bannersAjax.generateRequest();
+      }
+
+      /**
+       * Creates a new banner by evaluating the already existing banners on the range they cover, and tries to fit
+       * new date ranges that aren't covered yet
+       * @returns {*} an object that's a starting point for a banner, with calculated date ranges
+       */
+      createNewBanner() {
+        if (this.banners.length === 0) {
+          return { startDate: this.today, endDate: this.today };
+        }
+
+        let curr = new Date(this.banners[0].endDate);
+        curr.setDate(curr.getDate() + 1);
+
+        for (let i = 1; i < this.banners.length; i++) {
+          if (curr.valueOf() === new Date(this.banners[i].startDate).valueOf()) {
+            curr = new Date(this.banners[i].endDate);
+            curr.setDate(curr.getDate() + 1);
+          }
+          else {
+            curr = new Date(this.banners[i].endDate);
+            curr.setDate(curr.getDate() + 1);
+
+            if (i === this.banners.length - 1) {
+              let date = curr.toISOString().substr(0, 10);
+              return { startDate: date, endDate: date };
+            }
+            let end = new Date(this.banners[i + 1].startDate);
+            end.setDate(end.getDate() - 1);
+            return { startDate: curr.toISOString().substr(0, 10), endDate: end.toISOString().substr(0, 10) };
+          }
+        }
+
+      }
+
+      _openRemoveBannersDialog() {
+        this.$.removeBannersDialog.open();
+      }
+
+      _removeBanners() {
+        this.$.deleteBannersAjax.generateRequest();
+        this.banners = [];
+      }
+
+    }
+
+    customElements.define(LancieAdminHomepageText.is, LancieAdminHomepageText);
+  </script>
+</dom-module>

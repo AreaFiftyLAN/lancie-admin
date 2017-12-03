@@ -9,17 +9,13 @@
 <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
-<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 
 <link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../lancie-admin-icons.html">
 
 <dom-module id="lancie-admin-layout">
   <template>
@@ -64,6 +60,14 @@
       .rfid {
         border-top: 1px solid #e8e8e8;
       }
+
+      code {
+        color: #D72B3F;
+        background: #F7F7F9;
+        border-radius: 5px;
+        padding: 5px;
+      }
+
     </style>
 
 
@@ -76,51 +80,54 @@
 
         <paper-listbox selected="{{route.page}}" attr-for-selected="data-route">
           <paper-icon-item data-route="">
-            <iron-icon icon="home" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:home" slot="item-icon"></iron-icon>
             <a href="">Home</a>
           </paper-icon-item>
           <paper-icon-item data-route="users">
-            <iron-icon icon="social:person" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:person" slot="item-icon"></iron-icon>
             <a href="/users">Users</a>
           </paper-icon-item>
           <paper-icon-item data-route="teams">
-            <iron-icon icon="social:group" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:people" slot="item-icon"></iron-icon>
             <a href="/teams">Teams</a>
           </paper-icon-item>
           <paper-icon-item data-route="orders">
-            <iron-icon icon="shopping-cart" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:shopping-cart" slot="item-icon"></iron-icon>
             <a href="/orders">Orders</a>
           </paper-icon-item>
           <paper-icon-item data-route="tickets">
-            <iron-icon icon="receipt" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:receipt" slot="item-icon"></iron-icon>
             <a href="/tickets">Tickets</a>
           </paper-icon-item>
           <paper-icon-item data-route="types">
-            <iron-icon icon="dns" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:dns" slot="item-icon"></iron-icon>
             <a href="/types">Types</a>
           </paper-icon-item>
           <paper-icon-item data-route="seats">
-            <iron-icon icon="event-seat" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:event-seat" slot="item-icon"></iron-icon>
             <a href="/seats">Seats</a>
           </paper-icon-item>
+          <paper-icon-item data-route="text">
+            <iron-icon icon="lancie-admin:text" slot="item-icon"></iron-icon>
+            <a href="/text">Text</a>
+          </paper-icon-item>
           <paper-icon-item class="rfid" data-route="rfidassign">
-            <iron-icon icon="device:nfc" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:nfc" slot="item-icon"></iron-icon>
             <a href="/rfidassign">Assign RFID</a>
           </paper-icon-item>
           <paper-icon-item data-route="alcoholcheck">
-            <iron-icon icon="maps:local-bar" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:local-bar" slot="item-icon"></iron-icon>
             <a href="/alcoholcheck">Alcohol Check</a>
           </paper-icon-item>
           <paper-icon-item data-route="consumptions">
-            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:restaurant" slot="item-icon"></iron-icon>
             <a href="/consumptions">Consumptions</a>
           </paper-icon-item>
           <paper-icon-item class="logout" on-tap="logout">
-            <iron-icon icon="exit-to-app" slot="item-icon"></iron-icon>
+            <iron-icon icon="lancie-admin:exit-to-app" slot="item-icon"></iron-icon>
             <a href="#">Logout</a>
           </paper-icon-item>
         </paper-listbox>
-
 
       </section>
       </app-drawer>

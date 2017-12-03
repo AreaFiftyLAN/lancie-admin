@@ -1,0 +1,165 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--Element that makes it possible to schedule banners by providing start- and enddates and a corresponding text for
+the banner within that timeframe-->
+<dom-module id="lancie-admin-banner-scheduler">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+      }
+
+      .input-container {
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+      }
+
+      paper-input {
+        max-width: 200px;
+        margin-right: 16px;
+
+        --paper-input-error: {
+          white-space: normal;
+        };
+      }
+
+      @media screen and (min-width: 700px) {
+        paper-textarea {
+          width: 400px;
+          margin-left: 64px;
+        }
+      }
+
+      paper-icon-button.add {
+        color: var(--paper-green-500);
+      }
+
+      paper-button.update {
+        background-color: var(--lancie-button-color);
+        color: white;
+        max-height: 50px;
+      }
+    </style>
+
+    <lancie-ajax id="addBannerAjax" refurl="web/banners" method="POST" body="[[banner]]"
+                 on-lancie-ajax="onAdd"></lancie-ajax>
+    <lancie-ajax id="updateBannerAjax" refurl="web/banners/[[banner.id]]" method="POST" body="[[banner]]"
+                 on-lancie-ajax="onAdd"></lancie-ajax>
+    <lancie-ajax id="deleteBannerAjax" refurl="web/banners/[[banner.id]]" method="DELETE"
+                 on-lancie-ajax="onDelete"></lancie-ajax>
+
+    <div class="input-container">
+      <paper-input id="startDate" label="Start date" name="start-date" type="date" placeholder="YYYY-MM-DD"
+                   min="[[today]]" value="{{banner.startDate}}"
+                   error-message="The end date is before the start date" required></paper-input>
+      <paper-input id="endDate" label="End date" name="end-date" type="date" placeholder="YYYY-MM-DD" min="[[today]]"
+                   value="{{banner.endDate}}"
+                   required></paper-input>
+      <paper-textarea label="Banner text" value="{{banner.text}}"></paper-textarea>
+      <paper-icon-button icon="lancie-admin:add" class="add" hidden$="[[banner.id]]"
+                         on-tap="addBanner"></paper-icon-button>
+      <paper-button raised id="updateButton" class="update" hidden on-tap="updateBanner">Update</paper-button>
+      <paper-icon-button icon="lancie-admin:delete" on-tap="deleteBanner"></paper-icon-button>
+    </div>
+  </template>
+
+  <script>
+    class LancieAdminBannerScheduler extends Polymer.Element {
+      static get is() {
+        return 'lancie-admin-banner-scheduler';
+      }
+
+      static get properties() {
+        return {
+          banner: Object,
+          today: {
+            type: Date,
+            value: () => {
+              return (new Date()).toISOString().slice(0, 10);
+            },
+          },
+        };
+      }
+
+      static get observers() {
+        return ['_bannerChanged(banner.*)'];
+      }
+
+      _bannerChanged(banner) {
+        if (!this.isConnected)
+          return;
+        const startDate = this.banner.startDate;
+        const endDate = this.banner.endDate;
+        this.$.startDate.invalid = endDate < startDate;
+        this.$.updateButton.hidden = false;
+      }
+
+      addBanner() {
+        if (this.startDateInvalid())
+          return;
+        this.$.addBannerAjax.generateRequest();
+      }
+
+      updateBanner() {
+        if (this.startDateInvalid())
+          return;
+        this.$.updateBannerAjax.generateRequest();
+      }
+
+      startDateInvalid() {
+        if (this.$.startDate.invalid) {
+          this._fireToast('Make sure the dates are valid!');
+          return true;
+        }
+        return false;
+      }
+
+      deleteBanner() {
+        if (this.banner.id)
+          this.$.deleteBannerAjax.generateRequest();
+        else {
+          this.dispatchEvent(new CustomEvent('banner-removed', {
+            bubbles: true, composed: true,
+          }));
+        }
+      }
+
+      // used for both an add and an update
+      onAdd(e, req) {
+        if (req.succeeded) {
+          this.banner = req.response.object;
+          this._fireToast(req.response.message);
+        } else {
+          this._fireToast("Request failed!");
+        }
+        this.$.updateButton.hidden = true;
+      }
+
+      onDelete(e, req) {
+        if (req.succeeded) {
+          this.banner = {};
+          this.dispatchEvent(new CustomEvent('banner-removed', {
+            bubbles: true, composed: true,
+          }));
+        }
+        this._fireToast(req.response.message);
+      }
+
+      _fireToast(message) {
+        this.dispatchEvent(new CustomEvent('toast', {
+          bubbles: true, composed: true,
+          detail: {text: message},
+        }));
+      }
+
+    }
+
+    customElements.define(LancieAdminBannerScheduler.is, LancieAdminBannerScheduler);
+  </script>
+</dom-module>
