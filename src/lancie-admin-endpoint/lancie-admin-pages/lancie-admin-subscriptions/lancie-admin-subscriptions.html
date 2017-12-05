@@ -28,7 +28,7 @@
       }
     </style>
 
-    <lancie-ajax id="ajaxSubscriptions" auto-fire refurl="subscriptions" on-lancie-ajax="_onSubscriptionsResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxSubscriptions" auto-fire refurl="subscriptions" on-lancie-ajax="onDelete"></lancie-ajax>
     <lancie-ajax id="ajaxDelete" refurl="subscriptions/[[deleting.id]]"
                  on-lancie-ajax="_onDeleteSubscriptionResponse" method="DELETE"></lancie-ajax>
 
@@ -51,7 +51,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="handleDelete" class="confirm-delete-button">Delete</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button">Delete</paper-button>
       </div>
     </lancie-dialog>
 
@@ -65,24 +65,26 @@
         return {
           subscriptions: {
             type: Array,
-            value: []
+            value: function() {
+              return [];
+            }
           }
         }
       }
 
       constructor() {
         super();
-        this.addEventListener('delete-subscription', this._onDeleteSubscription);
+        this.addEventListener('delete-subscription', this.openDeleteSubscriptionDialog);
       }
 
-      handleDelete() {
-        if (!isNaN(this.deleting.id)) {
-          this.subscriptions = [];
+      tryDelete() {
+        this.$.status.clear();
+        if (this.deleting.id) {
           this.$.ajaxDelete.generateRequest();
         }
       }
 
-      _onSubscriptionsResponse(e, request) {
+      onDelete(e, request) {
         if (request.succeeded) {
           this.subscriptions = request.response;
           if (this.subscriptions.length === 0) {
@@ -94,7 +96,7 @@
         }
       }
 
-      _onDeleteSubscription(e) {
+      openDeleteSubscriptionDialog(e) {
         this.deleting = {
           id: e.detail.id,
           email: e.detail.email
@@ -108,7 +110,7 @@
           this.$.deleteSubscriptionDialog.close();
           this.$.ajaxSubscriptions.generateRequest();
         } else {
-          if (request.request.status=== 404) {
+          if (request.request.status === 404) {
             this.$.status.setWarning('This email address has already been unsubscribed, or was not found in the database.')
           } else {
             this.$.status.setError('Could not unsubscribe. Please try again.');
