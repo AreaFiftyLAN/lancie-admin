@@ -70,7 +70,7 @@
     <paper-card heading="Committee">
       <div class="card-content" on-delete-member-dialog="deleteMemberDialog">
         <lancie-error id="committeeError"></lancie-error>
-        <p hidden="[[!_hasMembers(committee)]]">No data found!</p>
+        <p hidden="[[_hasMembers(committee)]]">No data found!</p>
         <template is="dom-repeat" items="[[committee]]">
           <lancie-admin-committee-member member="[[item]]"></lancie-admin-committee-member>
         </template>
@@ -182,7 +182,7 @@
         }
 
         _hasMembers(committee) {
-          return committee.length >= 0;
+          return committee.length > 0;
         }
       }
 
