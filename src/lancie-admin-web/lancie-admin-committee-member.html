@@ -15,7 +15,6 @@
 
 <dom-module id="lancie-admin-committee-member">
   <template>
-    <style include="iron-flex iron-flex-alignment"></style>
     <style>
       :host {
         display: block;
@@ -24,15 +23,38 @@
       .delete-button {
         cursor: pointer;
       }
+
+      .align-right {
+        text-align: right;
+      }
     </style>
 
-    <paper-item class="layout horizontal justified wrap">
-      <div>[[member.name]]</div>
-      <div>
+    <custom-style>
+      <style is="custom-style">
+        .flex-horizontal-with-ratios {
+          @apply (--layout-horizontal);
+        }
+        .flexchild {
+          @apply (--layout-flex);
+        }
+        .flex2child {
+          @apply (--layout-flex-4);
+        }
+        .flex3child {
+          @apply (--layout-flex-9);
+        }
+      </style>
+    </custom-style>
+
+    <paper-item class="container flex-horizontal-with-ratios">
+      <div class="flex2child">[[member.name]]</div>
+      <div class="flex3child">
         <iron-icon icon="[[member.icon]]"></iron-icon>[[member.function]]
       </div>
-      <div>[[member.position]]</div>
-      <iron-icon icon="icons:delete" on-tap="deleteMemberDialog" class="delete-button"></iron-icon>
+      <div class="flexchild">[[member.position]]</div>
+      <div class="flexchild align-right">
+        <iron-icon icon="icons:delete" on-tap="deleteMemberDialog" class="delete-button"></iron-icon>
+      </div>
     </paper-item>
 
   </template>
