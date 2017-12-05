@@ -39,16 +39,31 @@
   <script>
     (function() {
       'use strict';
-      Polymer({
-        is: 'lancie-admin-committee-member',
-        properties: {
-          member: Object
-        },
 
-        deleteMemberDialog: function() {
-            this.fire('delete-member-dialog', this.member.position);
+      class LancieAdminCommitteeMember extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-committee-member';
         }
-      });
+
+        static get properties() {
+          return {
+            member: Object
+          }
+        }
+
+        deleteMemberDialog() {
+          this.dispatchEvent(new CustomEvent('delete-member-dialog', {
+            detail: {
+              position: this.member.position
+            },
+            bubbles: true,
+            composed: true
+          }));
+//          this.fire('delete-member-dialog', this.member.position);
+        }
+      }
+
+      customElements.define(LancieAdminCommitteeMember.is, LancieAdminCommitteeMember);
     })();
   </script>
 </dom-module>

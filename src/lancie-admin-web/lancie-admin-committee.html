@@ -121,63 +121,71 @@
   <script>
     (function () {
       'use strict';
-      Polymer({
-        is: 'lancie-admin-committee',
-        properties: {
-          committee: Array
-        },
 
-        handleResponse: function (e, request) {
+      class LancieAdminCommittee extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-committee';
+        }
+
+        static get properties() {
+          return {
+            committee: Array
+          }
+        }
+
+        handleResponse(e, request) {
           if (request.succeeded) {
             this.committee = request.response.object;
           } else {
             this.$.committeeError.setError('Could not retrieve committee. Please refresh and try again.')
           }
-        },
+        }
 
-        openAddCommitteeMemberDialog: function () {
+        openAddCommitteeMemberDialog() {
           this.$.addMemberForm.reset();
           this.$.addCommitteeMemberDialog.open();
-        },
+        }
 
-        addMember: function () {
+        addMember() {
           this.$.error.clear();
           this.$.addMemberForm.validateAndSubmit();
-        },
+        }
 
-        handleAddResponse: function (e, request) {
+        handleAddResponse(e, request) {
           if (request.succeeded) {
             this.$.addCommitteeMemberDialog.close();
             this.$.ajaxMembers.generateRequest();
           } else {
             this.$.error.setError("Could not add member. Please refresh and try again.")
           }
-        },
+        }
 
-        deleteMemberDialog: function (event) {
+        deleteMemberDialog(event) {
           this.deleteMember = this.committee.filter(member => {
-            return member.position === event.detail;
+            return member.position === event.detail.position;
           })[0];
           this.$.deleteCommitteeMemberDialogConfirm.open();
-        },
+        }
 
-        handleDelete: function () {
+        handleDelete() {
           this.$.ajaxDeleteMember.generateRequest();
-        },
+        }
 
-        handleDeleteResponse: function (e, request) {
+        handleDeleteResponse(e, request) {
           if (request.succeeded) {
             this.$.deleteCommitteeMemberDialogConfirm.close();
             this.$.ajaxMembers.generateRequest(); // Ensures we have a mirror of the latest server state
           } else {
             this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
           }
-        },
+        }
 
-        _hasMembers: function (committee) {
+        _hasMembers(committee) {
           return committee.length >= 0;
         }
-      });
+      }
+
+      customElements.define(LancieAdminCommittee.is, LancieAdminCommittee);
     })();
   </script>
 </dom-module>
