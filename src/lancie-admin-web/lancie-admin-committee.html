@@ -65,7 +65,7 @@
 
     <lancie-ajax auto-fire id="ajaxMembers" refurl="web/committee" on-lancie-ajax="handleResponse"></lancie-ajax>
     <lancie-ajax id="ajaxDeleteMember" method="DELETE" refurl="web/committee/[[deleteMember.position]]"
-                 on-lancie-ajax="handleDeleteResponse"></lancie-ajax>
+                 on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
     <paper-card heading="Committee">
       <div class="card-content" on-delete-member-dialog="deleteMemberDialog">
@@ -84,7 +84,7 @@
       <h2>Add committee member</h2>
       <div class="dialog-content">
         <lancie-error id="error"></lancie-error>
-        <lancie-form id="addMemberForm" refurl="web/committee" on-response="handleAddResponse">
+        <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
           <paper-input label="Name" name="name" auto-validate required
                        error-message="This field is required!"></paper-input>
           <paper-input label="Function" name="function" auto-validate required
@@ -101,7 +101,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="addMember" class="confirm-button">Save</paper-button>
+        <paper-button on-tap="tryAddMember" class="confirm-button">Save</paper-button>
       </div>
     </lancie-dialog>
 
@@ -114,7 +114,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="handleDelete" class="confirm-delete-button">Delete</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button">Delete</paper-button>
       </div>
     </lancie-dialog>
   </template>
@@ -146,12 +146,12 @@
           this.$.addCommitteeMemberDialog.open();
         }
 
-        addMember() {
+        tryAddMember() {
           this.$.error.clear();
           this.$.addMemberForm.validateAndSubmit();
         }
 
-        handleAddResponse(e, request) {
+        onAddResponse(e, request) {
           if (request.succeeded) {
             this.$.addCommitteeMemberDialog.close();
             this.$.ajaxMembers.generateRequest();
@@ -167,11 +167,11 @@
           this.$.deleteCommitteeMemberDialogConfirm.open();
         }
 
-        handleDelete() {
+        tryDelete() {
           this.$.ajaxDeleteMember.generateRequest();
         }
 
-        handleDeleteResponse(e, request) {
+        onDeleteResponse(e, request) {
           if (request.succeeded) {
             this.$.deleteCommitteeMemberDialogConfirm.close();
             this.$.ajaxMembers.generateRequest(); // Ensures we have a mirror of the latest server state
