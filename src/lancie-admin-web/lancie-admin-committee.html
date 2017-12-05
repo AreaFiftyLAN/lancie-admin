@@ -83,7 +83,7 @@
     <lancie-dialog id="addCommitteeMemberDialog">
       <h2>Add committee member</h2>
       <div class="dialog-content">
-        <lancie-error id="error"></lancie-error>
+        <lancie-error id="addDialogError"></lancie-error>
         <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
           <paper-input label="Name" name="name" auto-validate required
                        error-message="This field is required!"></paper-input>
@@ -136,6 +136,7 @@
         handleResponse(e, request) {
           if (request.succeeded) {
             this.committee = request.response.object;
+            this.committee.sort((a, b) => a.position - b.position);
           } else {
             this.$.committeeError.setError('Could not retrieve committee. Please refresh and try again.')
           }
@@ -147,7 +148,7 @@
         }
 
         tryAddMember() {
-          this.$.error.clear();
+          this.$.addDialogError.clear();
           this.$.addMemberForm.validateAndSubmit();
         }
 
@@ -156,7 +157,7 @@
             this.$.addCommitteeMemberDialog.close();
             this.$.ajaxMembers.generateRequest();
           } else {
-            this.$.error.setError("Could not add member. Please refresh and try again.")
+            this.$.addDialogError.setError("Could not add member. Please refresh and try again.")
           }
         }
 
