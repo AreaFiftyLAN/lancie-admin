@@ -28,15 +28,16 @@
       }
     </style>
 
-    <lancie-ajax id="ajaxSubscriptions" auto-fire refurl="subscriptions" on-lancie-ajax="onDelete"></lancie-ajax>
-    <lancie-ajax id="ajaxDelete" refurl="subscriptions/[[deleting.id]]"
-                 on-lancie-ajax="_onDeleteSubscriptionResponse" method="DELETE"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxSubscriptions" refurl="subscriptions" on-lancie-ajax="onSubscriptions"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteSubscription" method="DELETE" refurl="subscriptions/[[deleting.id]]" on-lancie-ajax="onDeleteSubscription"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="subscriptions">
       <p>This is a list of all the currently subscribed emails</p>
       <lancie-error id="status"></lancie-error>
+
       <paper-spinner-lite id="spinner" active="[[!subscriptions.length]]"></paper-spinner-lite>
       <small id="empty" hidden>No subscriptions found!</small>
+
       <template is="dom-repeat" items="[[subscriptions]]">
         <lancie-admin-subscription item="[[item]]"></lancie-admin-subscription>
       </template>
@@ -51,7 +52,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryDelete" class="confirm-delete-button">Delete</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button" raised>Delete</paper-button>
       </div>
     </lancie-dialog>
 
@@ -79,12 +80,10 @@
 
       tryDelete() {
         this.$.status.clear();
-        if (this.deleting.id) {
-          this.$.ajaxDelete.generateRequest();
-        }
+        this.$.ajaxDeleteSubscription.generateRequest();
       }
 
-      onDelete(e, request) {
+      onSubscriptions(e, request) {
         if (request.succeeded) {
           this.subscriptions = request.response;
           if (this.subscriptions.length === 0) {
@@ -97,16 +96,16 @@
       }
 
       openDeleteSubscriptionDialog(e) {
-        this.deleting = {
-          id: e.detail.id,
-          email: e.detail.email
-        };
+        this.deleting = e.detail;
         this.$.deleteSubscriptionDialog.open();
       }
 
-      _onDeleteSubscriptionResponse(e, request) {
+      onDeleteSubscription(e, request) {
         if (request.succeeded) {
-          this.$.status.setSuccess('Successfully unsubscribed!');
+          this.dispatchEvent(new CustomEvent('toast', {
+            detail: {text: "Unsubscribed!"},
+            bubbles: true,
+            composed: true}));
           this.$.deleteSubscriptionDialog.close();
           this.$.ajaxSubscriptions.generateRequest();
         } else {
