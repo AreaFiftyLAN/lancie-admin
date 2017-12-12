@@ -1,7 +1,6 @@
 <link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
 <link rel="import" href="../../../../bower_components/lancie-error/lancie-error.html">
-<link rel="import" href="../../../../bower_components/paper-spinner/paper-spinner-lite.html">
 
 <link rel="import" href="../../lancie-admin-page-layout.html">
 <link rel="import" href="lancie-admin-subscription.html">
@@ -18,10 +17,6 @@
         display: none !important;
       }
 
-      paper-spinner-lite:not([active]) {
-        display: none;
-      }
-
       .confirm-delete-button {
         background-color: var(--paper-red-700);
         color: #fff;
@@ -35,7 +30,6 @@
       <p>This is a list of all the currently subscribed emails</p>
       <lancie-error id="status"></lancie-error>
 
-      <paper-spinner-lite id="spinner" active="[[!subscriptions.length]]"></paper-spinner-lite>
       <small id="empty" hidden>No subscriptions found!</small>
 
       <template is="dom-repeat" items="[[subscriptions]]">
@@ -88,7 +82,6 @@
           this.subscriptions = request.response;
           if (this.subscriptions.length === 0) {
             this.$.empty.hidden = false;
-            this.$.spinner.hidden = true;
           }
         } else {
           this.$.status.setError(request.response);
