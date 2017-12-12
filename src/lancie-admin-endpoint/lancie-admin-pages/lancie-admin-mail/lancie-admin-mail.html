@@ -7,7 +7,7 @@
 <link rel="import" href="lancie-admin-subscription.html">
 
 
-<dom-module id="lancie-admin-subscriptions">
+<dom-module id="lancie-admin-mail">
   <template>
     <style>
       :host {
@@ -31,7 +31,7 @@
     <lancie-ajax auto-fire id="ajaxSubscriptions" refurl="subscriptions" on-lancie-ajax="onSubscriptions"></lancie-ajax>
     <lancie-ajax id="ajaxDeleteSubscription" method="DELETE" refurl="subscriptions/[[deleting.id]]" on-lancie-ajax="onDeleteSubscription"></lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="subscriptions">
+    <lancie-admin-page-layout endpoint="mail">
       <p>This is a list of all the currently subscribed emails</p>
       <lancie-error id="status"></lancie-error>
 
@@ -59,8 +59,8 @@
   </template>
 
   <script>
-    class LancieAdminSubscriptions extends Polymer.Element {
-      static get is() { return 'lancie-admin-subscriptions' }
+    class LancieAdminMail extends Polymer.Element {
+      static get is() { return 'lancie-admin-mail' }
 
       static get properties() {
         return {
@@ -117,6 +117,6 @@
         }
       }
     }
-    customElements.define(LancieAdminSubscriptions.is, LancieAdminSubscriptions);
+    customElements.define(LancieAdminMail.is, LancieAdminMail);
   </script>
 </dom-module>
