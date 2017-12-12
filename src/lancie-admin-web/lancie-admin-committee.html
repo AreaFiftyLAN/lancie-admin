@@ -1,18 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<!-- All icons as we allow user to choose -->
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/places-icons.html">
+<link rel="import" href="lancie-admin-committee-icons.html">
 
 <link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
 <link rel="import" href="../../bower_components/lancie-form/lancie-form.html">
@@ -32,6 +21,10 @@
       paper-card {
         width: calc(100% - 32px);
         margin: 16px;
+      }
+
+      iron-icon {
+        margin-right: 10px;
       }
 
       [hidden] {
@@ -91,8 +84,16 @@
                        error-message="This field is required!"></paper-input>
           <paper-input label="Position" name="position" error-message="Numbers only!" auto-validate pattern="[0-9]*"
                        required></paper-input>
-          <paper-input label="Icon" name="icon" auto-validate required error-message="Incorrect icon string"
-                       pattern="\w+:\w+"></paper-input>
+          <paper-dropdown-menu label="Icon" name="icon">
+            <paper-listbox slot="dropdown-content">
+              <template is="dom-repeat" items="[[icons]]" as="icon">
+                <paper-item>
+                  <iron-icon icon="commission:[[icon]]"></iron-icon>
+                  <span>[[icon]]</span>
+                </paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
         </lancie-form>
         <a href="https://www.webcomponents.org/element/PolymerElements/iron-icons/demo/demo/index.html"
            target="_blank" rel="noopener noreferrer" class="icons-link">
@@ -129,7 +130,21 @@
 
         static get properties() {
           return {
-            committee: Array
+            committee: Array,
+            icons: {
+              type: Array,
+              value: () => {
+                return [
+                  'attach-money',
+                  'announcement',
+                  'chrome-reader-mode',
+                  'gavel',
+                  'settings',
+                  'local-shipping',
+                  'notifications'
+                ]
+              }
+            }
           }
         }
 
