@@ -1,0 +1,115 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="../../../../bower_components/lancie-error/lancie-error.html">
+
+<link rel="import" href="../../lancie-admin-page-layout.html">
+<link rel="import" href="lancie-admin-subscription.html">
+
+
+<dom-module id="lancie-admin-mail">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .confirm-delete-button {
+        background-color: var(--paper-red-700);
+        color: #fff;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="ajaxSubscriptions" refurl="subscriptions" on-lancie-ajax="onSubscriptions"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteSubscription" method="DELETE" refurl="subscriptions/[[deleting.id]]" on-lancie-ajax="onDeleteSubscription"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="subscriptions">
+      <p>This is a list of all the currently subscribed emails</p>
+      <lancie-error id="status"></lancie-error>
+
+      <small id="empty" hidden>No subscriptions found!</small>
+
+      <template is="dom-repeat" items="[[subscriptions]]">
+        <lancie-admin-subscription item="[[item]]"></lancie-admin-subscription>
+      </template>
+    </lancie-admin-page-layout>
+
+    <lancie-dialog id="deleteSubscriptionDialog">
+      <h2>Confirm deletion</h2>
+      <div class="dialog-content">
+        <lancie-error id="dialogError"></lancie-error>
+        <h4>Are you certain you want to delete this subscription?</h4>
+        <p>[[deleting.email]]</p>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button" raised>Delete</paper-button>
+      </div>
+    </lancie-dialog>
+
+  </template>
+
+  <script>
+    class LancieAdminMail extends Polymer.Element {
+      static get is() { return 'lancie-admin-mail' }
+
+      static get properties() {
+        return {
+          subscriptions: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          }
+        }
+      }
+
+      constructor() {
+        super();
+        this.addEventListener('delete-subscription', this.openDeleteSubscriptionDialog);
+      }
+
+      tryDelete() {
+        this.$.status.clear();
+        this.$.ajaxDeleteSubscription.generateRequest();
+      }
+
+      onSubscriptions(e, request) {
+        if (request.succeeded) {
+          this.subscriptions = request.response;
+          if (this.subscriptions.length === 0) {
+            this.$.empty.hidden = false;
+          }
+        } else {
+          this.$.status.setError(request.response);
+        }
+      }
+
+      openDeleteSubscriptionDialog(e) {
+        this.deleting = e.detail;
+        this.$.deleteSubscriptionDialog.open();
+      }
+
+      onDeleteSubscription(e, request) {
+        if (request.succeeded) {
+          this.dispatchEvent(new CustomEvent('toast', {
+            detail: {text: "Unsubscribed!"},
+            bubbles: true,
+            composed: true}));
+          this.$.deleteSubscriptionDialog.close();
+          this.$.ajaxSubscriptions.generateRequest();
+        } else {
+          if (request.request.status === 404) {
+            this.$.status.setWarning('This email address has already been unsubscribed, or was not found in the database.')
+          } else {
+            this.$.status.setError('Could not unsubscribe. Please try again.');
+          }
+        }
+      }
+    }
+    customElements.define(LancieAdminMail.is, LancieAdminMail);
+  </script>
+</dom-module>
