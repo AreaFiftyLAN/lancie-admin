@@ -7,6 +7,11 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
 script:
-- docker build -t lancie-admin .
+- docker build --no-cache --pull -t wisvch/areafiftylan-admin:$TRAVIS_BUILD_NUMBER .
+after_success:
+- if [ "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}" == "master" ]; then
+ docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+ docker push wisvch/areafiftylan-admin:$TRAVIS_BUILD_NUMBER;
+fi
 notifications:
   email: false
