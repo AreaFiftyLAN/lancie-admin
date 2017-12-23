@@ -48,7 +48,7 @@
     <lancie-ajax id="ajaxDeleteSponsor" method="DELETE" refurl="web/sponsor/[[deleteItem.id]]"
                  on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
-    <paper-card heading="Sponsors" on-delete-sponsor-dialog="openDeleteDialog">
+    <paper-card heading="Sponsors" on-delete-sponsor-dialog="openDeleteDialog" on-show-sponsor="openSponsorDialog">
       <div class="card-content">
         <lancie-error id="error"></lancie-error>
         <p hidden="[[_hasSponsors(sponsors)]]">No data found!</p>
@@ -66,14 +66,15 @@
       <div class="dialog-content">
         <lancie-error id="addDialogError"></lancie-error>
         <lancie-form id="addSponsorForm" refurl="web/sponsor" on-response="onAddResponse">
-          <paper-input label="Name" name="name" auto-validate required
+          <input type="hidden" name="id" value="[[showingSponsor.id]]">
+          <paper-input label="Name" name="name" auto-validate required value="[[showingSponsor.name]]"
                        error-message="This field is required!"></paper-input>
-          <paper-input label="Image name" name="imageName" auto-validate required
+          <paper-input label="Image name" name="imageName" auto-validate required value="[[showingSponsor.imageName]]"
                        error-message="This field is required!"></paper-input>
-          <paper-input label="Website" name="website" auto-validate required
+          <paper-input label="Website" name="website" auto-validate required value="[[showingSponsor.website]]"
                        error-message="This field is required!"></paper-input>
-          <paper-dropdown-menu label="Sponsor Type">
-            <paper-listbox slot="dropdown-content" attr-for-selected="type">
+          <paper-dropdown-menu label="Sponsor Type" required name="type">
+            <paper-listbox slot="dropdown-content" attr-for-selected="type" selected="[[showingSponsor.type]]">
               <template is="dom-repeat" items="[[sponsorTypes]]">
                 <paper-item type="[[item]]">[[item]]</paper-item>
               </template>
@@ -124,6 +125,7 @@
                 return ['PRESENTER', 'PREMIUM', 'NORMAL']
               }
             },
+            showingSponsor: Object
           }
         }
 
@@ -158,6 +160,8 @@
 
         openAddDialog() {
           this.$.addDialogError.clear();
+          this.$.addSponsorForm.reset();
+          this.showingSponsor = {};
           this.$.addSponsorDialog.open();
         }
 
@@ -173,6 +177,14 @@
           } else {
             this.$.addDialogError.setError("Could not add item. Please refresh and try again.")
           }
+        }
+
+        openSponsorDialog(event) {
+          this.$.addSponsorForm.reset();
+          this.$.addDialogError.clear();
+          this.showingSponsor = {}; // Needed to forcefully cause an 'update'.
+          this.showingSponsor = this.sponsors.filter(sponsor => sponsor.id === event.detail.id)[0];
+          this.$.addSponsorDialog.open();
         }
 
         _hasSponsors(sponsors) {

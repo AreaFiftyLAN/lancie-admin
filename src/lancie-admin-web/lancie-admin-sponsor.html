@@ -12,6 +12,7 @@
     <style>
       :host {
         display: block;
+        cursor: pointer;
       }
 
       .delete-button {
@@ -37,7 +38,7 @@
       </style>
     </custom-style>
 
-    <paper-item class="container flex-horizontal-with-ratios">
+    <paper-item class="container flex-horizontal-with-ratios" on-tap="showSponsor">
       <div class="flexchild">[[item.id]]</div>
       <div class="flex-big-child">
         <span>[[item.name]]</span><br/>
@@ -70,8 +71,20 @@
           }
         }
 
-        deleteSponsorDialog() {
+        deleteSponsorDialog(e) {
+          e.cancelBubble = true;
+          e.stopPropagation(); // To prevent also opening the sponsor dialog.
           this.dispatchEvent(new CustomEvent('delete-sponsor-dialog', {
+            detail: {
+              id: this.item.id
+            },
+            bubbles: true,
+            composed: true
+          }));
+        }
+
+        showSponsor() {
+          this.dispatchEvent(new CustomEvent('show-sponsor', {
             detail: {
               id: this.item.id
             },
