@@ -153,6 +153,8 @@
           if (request.succeeded) {
             this.$.deleteDialog.close();
             this.$.ajaxSponsors.generateRequest(); // Ensures we have a mirror of the latest server state
+          } else if (request.request.status === 409) {
+            this.$.dialogError.setError(request.request.response.message);
           } else {
             this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
           }
