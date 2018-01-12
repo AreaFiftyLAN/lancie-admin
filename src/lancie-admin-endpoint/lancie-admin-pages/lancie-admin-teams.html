@@ -45,7 +45,7 @@
               return {
                 members: function(data) {
                   var text = data.reduce(function(text, m){
-                    return text + m.username + ', ';
+                    return text + m.email + ', ';
                   }, '');
                   return text.substr(0, text.length - 2);
                 },
