@@ -17,7 +17,9 @@
 
     <lancie-admin-page-layout endpoint="teams">
       <p>Here is where the teams will be.</p>
-      <p>Requests will be on <code>/api/v1/teams</code></p>
+      <p>Requests will be on
+        <code>/api/v1/teams</code>
+      </p>
 
       <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
     </lancie-admin-page-layout>
@@ -33,18 +35,18 @@
           data: Object,
           mappings: {
             type: Object,
-            value: function() {
+            value: function () {
               return {
-                captain: ['username', 'email'],
+                captain: ['email'],
               };
             }
           },
           renderers: {
             type: Object,
-            value: function() {
+            value: function () {
               return {
-                members: function(data) {
-                  var text = data.reduce(function(text, m){
+                members: function (data) {
+                  var text = data.reduce(function (text, m) {
                     return text + m.email + ', ';
                   }, '');
                   return text.substr(0, text.length - 2);
