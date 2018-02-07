@@ -1,0 +1,45 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+<dom-module id="lancie-admin-progress-meter">
+<template>
+<style>
+  :host {
+    display: block;
+    padding: 4px;
+  }
+
+  div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  paper-progress {
+    width: 100%;
+    --paper-progress-height: 16px;
+  }
+</style>
+
+<div>
+  <span>[[name]]</span><span>[[count]]/[[total]]</span>
+</div>
+<paper-progress min="0" value="[[count]]" max="[[total]]"></paper-progress>
+
+</template>
+<script>
+class LancieAdminProgressMeter extends Polymer.Element {
+  static get is() {
+    return 'lancie-admin-progress-meter';
+  }
+
+  static get properties() {
+    return {
+      name: String,
+      count: String,
+      total: String,
+    };
+  }
+}
+customElements.define(LancieAdminProgressMeter.is, LancieAdminProgressMeter);
+</script>
+</dom-module>
