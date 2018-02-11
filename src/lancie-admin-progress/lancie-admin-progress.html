@@ -1,0 +1,97 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../lancie-admin-endpoint/lancie-admin-page-layout.html">
+<link rel="import" href="lancie-admin-progress-meter.html">
+
+<dom-module id="lancie-admin-progress">
+<template>
+<style>
+  :host {
+    display: block;
+  }
+</style>
+
+  <lancie-ajax auto-fire refurl="tickets" on-lancie-ajax="onTickets"></lancie-ajax>
+  <lancie-ajax id="ajaxRfid" refurl="rfid" on-lancie-ajax="onRfid"></lancie-ajax>
+  <lancie-ajax auto-fire refurl="consumptions" on-lancie-ajax="onConsumptions"></lancie-ajax>
+  <lancie-ajax id="ajaxConsumptionMaps" refurl="consumptions/consumptionMaps" on-lancie-ajax="onConsumptionMaps"></lancie-ajax>
+
+  <lancie-admin-page-layout endpoint="progress">
+    <template is="dom-repeat" items="[[progressMeters]]">
+      <lancie-admin-progress-meter name="[[item.name]]" count="[[item.count]]" total="[[item.total]]"></lancie-admin-progress-meter>
+    </template>
+  </lancie-admin-page-layout>
+
+</template>
+<script>
+class LancieAdminProgress extends Polymer.Element {
+  static get is() {
+    return 'lancie-admin-progress';
+  }
+
+  static get properties() {
+    return {
+      tickets: String,
+      consumptions: {
+        type: Object,
+        value: () => {return [];}
+      },
+      progressMeters: {
+        type: Object,
+        value: () => {return [];}
+      }
+    };
+  }
+
+  // Retrieves total amount of tickets
+  onTickets(event, request) {
+    if (request.succeeded) {
+      this.tickets = request.response.length;
+      this.$.ajaxRfid.generateRequest();
+    }
+  }
+
+  // Retrieves all people checked in
+  onRfid(event, request) {
+    if (request.succeeded) {
+      this.addProgressMeter('CheckIn', request.response.length, this.tickets);
+    }
+  }
+
+  // Builds array of all consumptions with value 0. Sends request to retrieve all consumptions made
+  onConsumptions(event, request) {
+    if (request.succeeded) {
+      request.response.forEach(consumption => {
+        this.consumptions[consumption.name] = 0;
+      });
+      this.$.ajaxConsumptionMaps.generateRequest();
+    }
+  }
+
+  // Increases bucket for each consumption for each time it is consumed
+  onConsumptionMaps(event, request) {
+    if (request.succeeded) {
+      request.response.forEach(cm => {
+        cm.consumptionsMade.forEach(consumption => {
+          this.consumptions[consumption.name]++;
+        });
+      });
+
+      for (var c in this.consumptions) {
+        this.addProgressMeter(c, this.consumptions[c], this.tickets);
+      }
+    }
+  }
+
+  // Adds a new progressMeter with the Polymer push function to notify
+  addProgressMeter(name, count, total) {
+    this.push('progressMeters', {
+      name: name,
+      count: count,
+      total: total,
+    });
+  }
+}
+customElements.define(LancieAdminProgress.is, LancieAdminProgress);
+</script>
+</dom-module>
