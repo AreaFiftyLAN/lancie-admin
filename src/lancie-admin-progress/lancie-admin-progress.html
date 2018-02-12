@@ -12,13 +12,13 @@
 </style>
 
   <lancie-ajax auto-fire refurl="tickets" on-lancie-ajax="onTickets"></lancie-ajax>
-  <lancie-ajax id="ajaxRfid" refurl="rfid" on-lancie-ajax="onRfid"></lancie-ajax>
+  <lancie-ajax auto-fire refurl="rfid" on-lancie-ajax="onRfid"></lancie-ajax>
   <lancie-ajax auto-fire refurl="consumptions" on-lancie-ajax="onConsumptions"></lancie-ajax>
   <lancie-ajax id="ajaxConsumptionMaps" refurl="consumptions/consumptionMaps" on-lancie-ajax="onConsumptionMaps"></lancie-ajax>
 
   <lancie-admin-page-layout endpoint="progress">
     <template is="dom-repeat" items="[[progressMeters]]">
-      <lancie-admin-progress-meter name="[[item.name]]" count="[[item.count]]" total="[[item.total]]"></lancie-admin-progress-meter>
+      <lancie-admin-progress-meter name="[[item.name]]" count="[[item.count]]" total="[[tickets]]"></lancie-admin-progress-meter>
     </template>
   </lancie-admin-page-layout>
 
@@ -47,14 +47,13 @@ class LancieAdminProgress extends Polymer.Element {
   onTickets(event, request) {
     if (request.succeeded) {
       this.tickets = request.response.length;
-      this.$.ajaxRfid.generateRequest();
     }
   }
 
   // Retrieves all people checked in
   onRfid(event, request) {
     if (request.succeeded) {
-      this.addProgressMeter('CheckIn', request.response.length, this.tickets);
+      this.addProgressMeter('CheckIn', request.response.length);
     }
   }
 
@@ -78,17 +77,16 @@ class LancieAdminProgress extends Polymer.Element {
       });
 
       for (var c in this.consumptions) {
-        this.addProgressMeter(c, this.consumptions[c], this.tickets);
+        this.addProgressMeter(c, this.consumptions[c]);
       }
     }
   }
 
   // Adds a new progressMeter with the Polymer push function to notify
-  addProgressMeter(name, count, total) {
+  addProgressMeter(name, count) {
     this.push('progressMeters', {
       name: name,
       count: count,
-      total: total,
     });
   }
 }
