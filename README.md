@@ -1,3 +1,4 @@
+[![Docker Repository on Quay](https://quay.io/repository/areafiftylan/lancie-admin/status "Docker Repository on Quay")](https://quay.io/repository/areafiftylan/lancie-admin) [![Build Status](https://travis-ci.org/AreaFiftyLAN/lancie-admin.svg?branch=master)](https://travis-ci.org/AreaFiftyLAN/lancie-admin)
 # \<lancie-admin\>
 
 Admin panel for the LANcie API
