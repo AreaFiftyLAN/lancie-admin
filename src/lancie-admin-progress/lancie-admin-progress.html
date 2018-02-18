@@ -46,7 +46,7 @@ class LancieAdminProgress extends Polymer.Element {
   // Retrieves total amount of tickets
   onTickets(event, request) {
     if (request.succeeded) {
-      this.tickets = request.response.length;
+      this.tickets = request.response.filter(t => t.valid).length;
     }
   }
 
