@@ -1,8 +1,7 @@
 FROM node:8 AS builder
 WORKDIR /src
-ADD . ./
+COPY . .
 RUN docker/dockerbuild.sh
 
-FROM nginx:mainline
-COPY docker/nginx_server.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /src/build /srv/www
+FROM wisvch/nginx
+COPY --from=builder /src/build/ /srv/
