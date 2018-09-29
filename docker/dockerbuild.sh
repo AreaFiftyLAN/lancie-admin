@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Install programs required for build
-npm install -g yarn bower
+npm install -g bower
 
 # Fetch dependencies
 yarn
