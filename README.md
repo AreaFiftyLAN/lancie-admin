@@ -9,9 +9,18 @@ First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polyme
 
 ## Viewing Your Application
 
+If you are trying to run the application for the first time, first run:
+
+```
+$ bower install
+```
+
+After that you can use the following command to run the application locally:
+
 ```
 $ polymer serve
 ```
+
 
 ## Building Your Application
 
