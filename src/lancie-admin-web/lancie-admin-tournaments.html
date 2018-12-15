@@ -92,7 +92,7 @@
                  on-lancie-ajax="handleSponsorResponse"></lancie-ajax>
     <lancie-ajax id="ajaxDeleteTournament" method="DELETE" refurl="web/tournament/[[deleteTournament.id]]"
                  on-lancie-ajax="handleDeleteResponse"></lancie-ajax>
-    <lancie-ajax id="ajaxAddTournament" method="POST" refurl="[[tournamentFormRefUrl]]"
+    <lancie-ajax id="ajaxAddTournament" method=[[method]] refurl="[[tournamentFormRefUrl]]"
                  on-lancie-ajax="handleAddResponse"
                  body="[[displayingTournament]]"></lancie-ajax>
 
@@ -265,12 +265,14 @@
         this.set('displayingTournament', this.tournaments.filter(tournament => tournament.id === event.detail.id)[0]);
         this.set('displayingTournamentUpdated', false);
         this.set('tournamentFormRefUrl', 'web/tournament/' + this.displayingTournament.id);
+        this.set('method', "PUT");
         this.$.tournamentDialog.open();
       }
 
       openTournamentDialogNew() {
         this._clearTournamentDialog();
         this.set('tournamentFormRefUrl', 'web/tournament');
+        this.set('method', "POST");
         this.$.tournamentDialog.open();
       }
 
