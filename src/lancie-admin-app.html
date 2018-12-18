@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/lancie-login-card/lancie-login-card.html">
 <link rel="import" href="../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../bower_components/lancie-form/lancie-form.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <dom-module id="lancie-admin-app">
@@ -30,6 +31,7 @@
     <paper-toast id="globalToast"></paper-toast>
 
     <lancie-ajax id="ajax"></lancie-ajax>
+    <lancie-form id="form"></lancie-form>
     <iron-ajax
       id="getCurrentUser"
       url="/api/v1/users/current"
@@ -94,6 +96,7 @@
         if (detail.user.authorities.indexOf('ROLE_ADMIN') > -1) {
           this.user = detail;
           this.$.ajax.injectToken(detail.token);
+          this.$.form.injectToken(detail.token);
           window.localStorage.setItem('a5lauth', detail.token);
 
           this.loggedIn = true;

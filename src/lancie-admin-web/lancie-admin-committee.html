@@ -1,0 +1,203 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="lancie-admin-committee-icons.html">
+
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/lancie-form/lancie-form.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="./lancie-admin-committee-member.html">
+
+<dom-module id="lancie-admin-committee">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      iron-icon {
+        margin-right: 10px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+
+      .confirm-button, .confirm-delete-button {
+        color: #fff;
+      }
+
+      .confirm-button {
+        background-color: var(--primary-color);
+      }
+
+      .confirm-delete-button {
+        background-color: var(--paper-red-700);
+      }
+
+      .icons-link {
+        display: block;
+        margin-top: 1em;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="ajaxMembers" refurl="web/committee" on-lancie-ajax="handleResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteMember" method="DELETE" refurl="web/committee/[[deleteMember.position]]"
+                 on-lancie-ajax="onDeleteResponse"></lancie-ajax>
+
+    <paper-card heading="Committee">
+      <div class="card-content" on-delete-member-dialog="deleteMemberDialog">
+        <lancie-error id="committeeError"></lancie-error>
+        <p hidden="[[_hasMembers(committee)]]">No data found!</p>
+        <template is="dom-repeat" items="[[committee]]">
+          <lancie-admin-committee-member member="[[item]]"></lancie-admin-committee-member>
+        </template>
+      </div>
+      <div class="card-actions">
+        <paper-button on-tap="openAddCommitteeMemberDialog">Add Member</paper-button>
+      </div>
+    </paper-card>
+
+    <lancie-dialog id="addCommitteeMemberDialog">
+      <h2>Add committee member</h2>
+      <div class="dialog-content">
+        <lancie-error id="addDialogError"></lancie-error>
+        <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
+          <paper-input label="Name" name="name" auto-validate required
+                       error-message="This field is required!"></paper-input>
+          <paper-input label="Function" name="function" auto-validate required
+                       error-message="This field is required!"></paper-input>
+          <paper-input label="Position" name="position" error-message="Numbers only!" auto-validate pattern="[0-9]*"
+                       required></paper-input>
+          <paper-dropdown-menu label="Icon" name="icon">
+            <paper-listbox slot="dropdown-content">
+              <template is="dom-repeat" items="[[icons]]" as="icon">
+                <paper-item>
+                  <iron-icon icon="commission:[[icon]]"></iron-icon>
+                  <span>[[icon]]</span>
+                </paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </lancie-form>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryAddMember" class="confirm-button">Save</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="deleteCommitteeMemberDialogConfirm">
+      <h2>Confirm deletion</h2>
+      <div class="dialog-content">
+        <lancie-error id="dialogError"></lancie-error>
+        <h4>Are you certain you want to delete this committee member?</h4>
+        <p>[[deleteMember.name]]</p>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button">Delete</paper-button>
+      </div>
+    </lancie-dialog>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      class LancieAdminCommittee extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-committee';
+        }
+
+        static get properties() {
+          return {
+            committee: Array,
+            icons: {
+              type: Array,
+              value: () => {
+                return [
+                  'attach-money',
+                  'announcement',
+                  'chrome-reader-mode',
+                  'gavel',
+                  'settings',
+                  'local-shipping',
+                  'notifications'
+                ]
+              }
+            }
+          }
+        }
+
+        handleResponse(e, request) {
+          if (request.succeeded) {
+            this.committee = request.response.object;
+            this.committee.sort((a, b) => a.position - b.position);
+          } else {
+            this.$.committeeError.setError('Could not retrieve committee. Please refresh and try again.')
+          }
+        }
+
+        openAddCommitteeMemberDialog() {
+          this.$.addMemberForm.reset();
+          this.$.addCommitteeMemberDialog.open();
+        }
+
+        tryAddMember() {
+          this.$.addDialogError.clear();
+          this.$.addMemberForm.validateAndSubmit();
+        }
+
+        onAddResponse(e, request) {
+          if (request.succeeded) {
+            this.$.addCommitteeMemberDialog.close();
+            this.$.ajaxMembers.generateRequest();
+          } else {
+            this.$.addDialogError.setError("Could not add member. Please refresh and try again.")
+          }
+        }
+
+        deleteMemberDialog(event) {
+          this.deleteMember = this.committee.filter(member => {
+            return member.position === event.detail.position;
+          })[0];
+          this.$.deleteCommitteeMemberDialogConfirm.open();
+        }
+
+        tryDelete() {
+          this.$.ajaxDeleteMember.generateRequest();
+        }
+
+        onDeleteResponse(e, request) {
+          if (request.succeeded) {
+            this.$.deleteCommitteeMemberDialogConfirm.close();
+            this.$.ajaxMembers.generateRequest(); // Ensures we have a mirror of the latest server state
+          } else {
+            this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
+          }
+        }
+
+        _hasMembers(committee) {
+          return committee.length > 0;
+        }
+      }
+
+      customElements.define(LancieAdminCommittee.is, LancieAdminCommittee);
+    })();
+  </script>
+</dom-module>

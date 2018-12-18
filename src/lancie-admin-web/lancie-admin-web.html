@@ -1,0 +1,39 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="./lancie-admin-committee.html">
+<link rel="import" href="./lancie-admin-faq.html">
+<link rel="import" href="./lancie-admin-tournaments.html">
+<link rel="import" href="./lancie-admin-sponsors.html">
+
+<dom-module id="lancie-admin-web">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-admin-committee></lancie-admin-committee>
+    <lancie-admin-faq></lancie-admin-faq>
+    <lancie-admin-tournaments></lancie-admin-tournaments>
+    <lancie-admin-sponsors></lancie-admin-sponsors>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      class LancieAdminWeb extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-web';
+        }
+
+        static get properties() {
+          return {};
+        }
+      }
+
+      customElements.define(LancieAdminWeb.is, LancieAdminWeb);
+    })();
+  </script>
+</dom-module>

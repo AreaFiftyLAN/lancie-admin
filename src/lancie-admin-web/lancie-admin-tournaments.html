@@ -1,0 +1,371 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../bower_components/lancie-form/lancie-form.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+
+<link rel="import" href="./lancie-admin-tournament.html">
+
+<dom-module id="lancie-admin-tournaments">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      paper-textarea {
+        max-width: 500px;
+        min-height: 2em;
+      }
+
+      iron-icon {
+        cursor: pointer;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+
+      .confirm-button, .confirm-delete-button {
+        color: #fff;
+      }
+
+      .confirm-button {
+        background-color: var(--primary-color);
+      }
+
+      .confirm-delete-button {
+        background-color: var(--paper-red-700);
+      }
+
+      .tournament-dialog-column {
+        margin-right: 1em;
+      }
+
+      .prizes > h4 {
+        margin-top: .5em;
+        margin-bottom: 0;
+      }
+
+      .add-prize {
+        cursor: pointer;
+      }
+
+      .no-top-margin {
+        margin-top: 0 !important;
+      }
+
+      .clear-sponsor-icon {
+        position: relative;
+        width: var(--iron-icon-width, 24px);
+      }
+
+      .clear-sponsor-icon iron-icon {
+        position: absolute;
+        bottom: 7px;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="ajaxGetTournaments" refurl="web/tournament"
+                 on-lancie-ajax="handleResponse"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxGetSponsors" refurl="web/sponsor"
+                 on-lancie-ajax="handleSponsorResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteTournament" method="DELETE" refurl="web/tournament/[[deleteTournament.id]]"
+                 on-lancie-ajax="handleDeleteResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxAddTournament" method=[[method]] refurl="[[tournamentFormRefUrl]]"
+                 on-lancie-ajax="handleAddResponse"
+                 body="[[displayingTournament]]"></lancie-ajax>
+
+    <div>
+      <paper-card heading="Tournaments">
+        <div class="card-content">
+          <lancie-error id="tournamentError"></lancie-error>
+          <p id="noDataTournaments" hidden>No data found!</p>
+          <h3 class="no-top-margin">Official Tournaments</h3>
+          <template is="dom-repeat" items="[[officialTournaments]]">
+            <lancie-admin-tournament tournament="[[item]]"></lancie-admin-tournament>
+          </template>
+
+          <h3>Unofficial Tournaments</h3>
+          <template is="dom-repeat" items="[[unofficialTournaments]]">
+            <lancie-admin-tournament tournament="[[item]]"></lancie-admin-tournament>
+          </template>
+        </div>
+        <div class="card-actions">
+          <paper-button on-tap="openTournamentDialogNew">Add Tournament</paper-button>
+        </div>
+      </paper-card>
+    </div>
+
+    <lancie-dialog id="tournamentDialog" dismiss-callback="[[_dismissTournamentDialog]]">
+      <h2>Tournament - [[displayingTournament.headerTitle]]</h2>
+      <div class="dialog-content">
+        <lancie-form id="tournamentForm">
+          <lancie-error id="tournamentDialogError"></lancie-error>
+          <div class="layout horizontal justified">
+            <div class="tournament-dialog-column">
+              <paper-input label="Button Image Path" name="buttonImagePath" auto-validate required
+                           value={{displayingTournament.buttonImagePath}}
+                           error-message="This field is required!"></paper-input>
+              <paper-input label="Button Title" name="buttonTitle" auto-validate required
+                           value={{displayingTournament.buttonTitle}}
+                           error-message="This field is required!"></paper-input>
+              <paper-textarea label="Description" name="description" auto-validate required
+                              value={{displayingTournament.description}}
+                              error-message="This field is required!"
+                              always-float-label="{{displayingTournament.description}}"
+                              max-rows="10" rows="3"></paper-textarea>
+              <paper-input label="Format" name="format" auto-validate required
+                           value={{displayingTournament.format}}
+                           error-message="This field is required!"></paper-input>
+              <paper-input label="Header Title" name="headerTitle" auto-validate required
+                           value={{displayingTournament.headerTitle}}
+                           error-message="This field is required!"></paper-input>
+              <paper-dropdown-menu label="Tournament Type">
+                <paper-listbox slot="dropdown-content" selected="{{displayingTournament.type}}"
+                               attr-for-selected="type">
+                  <template is="dom-repeat" items="[[tournamentTypes]]">
+                    <paper-item type="[[item]]">[[item]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class="prizes">
+              <h4>Prizes</h4>
+                <paper-listbox attr-for-selected="value">
+                  <div class="layout vertical justified">
+                    <template is="dom-repeat" items="{{displayingTournament.prizes}}">
+                      <paper-input label="Prize name" value="{{item}}" auto-validate required>
+                        <iron-icon slot="suffix" icon="icons:delete" on-tap="_deletePrize"></iron-icon>
+                      </paper-input>
+                    </template>
+                  </div>
+                </paper-listbox>
+              <paper-icon-item class="add-prize" on-tap="_addPrize">
+                <iron-icon icon="icons:add-circle-outline" slot="item-icon"></iron-icon>
+                <paper-item-body>Add prize</paper-item-body>
+              </paper-icon-item>
+              <h4>Sponsor</h4>
+              <div class="layout horizontal justified">
+                <paper-dropdown-menu label="Tournament Sponsor" on-value-changed="_updateTournamentSponsor">
+                  <paper-listbox slot="dropdown-content" selected="[[displayingTournament.sponsor.id]]"
+                                 attr-for-selected="sponsor">
+                    <template is="dom-repeat" items="[[sponsors]]">
+                      <paper-item sponsor="[[item.id]]">[[item.name]]</paper-item>
+                    </template>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+                <div class="clear-sponsor-icon">
+                  <iron-icon icon="icons:clear" on-tap="_unsetTournamentSponsor"></iron-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </lancie-form>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryAddTournament" class="confirm-button">Save</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="deleteTournamentDialogConfirm">
+      <h2>Confirm deletion</h2>
+      <div class="dialog-content">
+        <lancie-error id="deleteDialogError"></lancie-error>
+        <h4>Are you certain you want to delete this tournament?</h4>
+        <p>[[deleteTournament.headerTitle]]</p>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDelete" class="confirm-delete-button">Delete</paper-button>
+      </div>
+    </lancie-dialog>
+  </template>
+  <script>
+    class LancieAdminTournaments extends Polymer.Element {
+      static get is() {
+        return 'lancie-admin-tournaments'
+      }
+
+      static get properties() {
+        return {
+          tournaments: Array,
+          sponsors: Array,
+          officialTournaments: Array,
+          unofficialTournaments: Array,
+          displayingTournament: Object,
+          tournamentTypes: {
+            type: Array,
+            value: () => {
+              return ['OFFICIAL', 'UNOFFICIAL']
+            }
+          },
+          displayingTournamentUpdated: Boolean,
+          tournamentFormRefUrl: String,
+        }
+      }
+
+      static get observers() {
+        return [
+          '_displayingTournamentUpdated(displayingTournament.*)'
+        ]
+      }
+
+      constructor() {
+        super();
+
+        this.addEventListener('open-tournament-dialog', this.openTournamentDialog);
+        this.addEventListener('delete-tournament-dialog', this.deleteTournamentDialog);
+      }
+
+      handleResponse(e, request) {
+        if (request.succeeded) {
+          let tournaments = request.response.object;
+          this.set('tournaments', tournaments);
+          this.set('officialTournaments', tournaments.filter(tournament => tournament.type === 'OFFICIAL'));
+          this.set('unofficialTournaments', tournaments.filter(tournament => tournament.type === 'UNOFFICIAL'));
+          this.$.noDataTournaments.hidden = this.tournaments.length > 0;
+        } else {
+          this.$.tournamentError.setError('Could not retrieve tournaments. Please refresh and try again.')
+        }
+      }
+
+      handleSponsorResponse(e, request) {
+        if (request.succeeded) {
+          let sponsors = request.response.object;
+          this.set('sponsors', sponsors);
+        } else {
+          this.$.tournamentError.setError('Could not retrieve sponsors. Please refresh and try again.')
+        }
+      }
+
+      openTournamentDialog(event) {
+        this._clearTournamentDialog();
+        this.set('displayingTournament', this.tournaments.filter(tournament => tournament.id === event.detail.id)[0]);
+        this.set('displayingTournamentUpdated', false);
+        this.set('tournamentFormRefUrl', 'web/tournament/' + this.displayingTournament.id);
+        this.set('method', "PUT");
+        this.$.tournamentDialog.open();
+      }
+
+      openTournamentDialogNew() {
+        this._clearTournamentDialog();
+        this.set('tournamentFormRefUrl', 'web/tournament');
+        this.set('method', "POST");
+        this.$.tournamentDialog.open();
+      }
+
+      tryAddTournament() {
+        this.$.tournamentDialogError.clear();
+
+        // We have to do it like this, as lancie-form does not serialize objects properly.
+        if (this.$.tournamentForm.validate()) {
+          this.$.ajaxAddTournament.generateRequest();
+        }
+      }
+
+      handleAddResponse(e, request) {
+        if (request.succeeded) {
+          this.set('displayingTournamentUpdated', false);
+          this.$.tournamentDialog.close();
+          this.$.ajaxGetTournaments.generateRequest();
+        } else {
+          this.$.tournamentDialogError.setError("Could not add or update tournament. Please refresh and try again.")
+        }
+      }
+
+      deleteTournamentDialog(event) {
+        this.deleteTournament = this.tournaments.filter(tournament => {
+          return tournament.id === event.detail.id;
+        })[0];
+        this.$.deleteTournamentDialogConfirm.open();
+      }
+
+      tryDelete() {
+        this.$.ajaxDeleteTournament.generateRequest();
+      }
+
+      handleDeleteResponse(e, request) {
+        if (request.succeeded) {
+          this.$.deleteTournamentDialogConfirm.close();
+          this.$.ajaxGetTournaments.generateRequest(); // Ensures we have a mirror of the latest server state
+        } else {
+          this.$.deleteDialogError.setError('Something went wrong! Please refresh and try again.')
+        }
+      }
+
+      _addPrize() {
+        if (this.displayingTournament.prizes) {
+          this.push('displayingTournament.prizes', '');
+        } else {
+          this.set('displayingTournament.prizes', []);
+          this.push('displayingTournament.prizes', '');
+        }
+        this.set('displayingTournamentUpdated', true);
+      }
+
+      _deletePrize(e) {
+        let prizes = this.displayingTournament.prizes.filter(prize => prize !== e.model.item);
+        this.set('displayingTournament.prizes', prizes);
+      }
+
+      _displayingTournamentUpdated() {
+        this.set('displayingTournamentUpdated', true);
+      }
+
+      _dismissTournamentDialog() {
+        if (this.domHost.displayingTournamentUpdated) {
+          if (confirm("There are unsaved changes, do you wish to dismiss these changes?")) {
+            this.set('displayingTournamentUpdated', false);
+            this.domHost.$.ajaxGetTournaments.generateRequest();
+            return true;
+          } else {
+            return false
+          }
+        } else {
+          return true;
+        }
+      }
+
+      _clearTournamentDialog() {
+        this.set('displayingTournament', {});
+        this.set('displayingTournamentUpdated', false);
+        this.$.tournamentDialogError.clear();
+        this.$.tournamentForm.reset();
+      }
+
+      _unsetTournamentSponsor() {
+        this.set('displayingTournament.sponsor', {});
+      }
+
+      _updateTournamentSponsor(el) {
+        this.set('displayingTournament.sponsor', this.sponsors.filter(sponsor => {
+          return el.detail.value === sponsor.name;
+        })[0]);
+      }
+    }
+
+    customElements.define(LancieAdminTournaments.is, LancieAdminTournaments)
+  </script>
+</dom-module>
