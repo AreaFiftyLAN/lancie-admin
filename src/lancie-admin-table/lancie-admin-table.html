@@ -175,7 +175,7 @@
             var keys = Object.keys(data[0]);
             var columns = keys.map(function(key) {
               // If a mapping exists, resolve it
-              if (this.columnMappings && !!this.columnMappings[key]) {
+              if (!!this.columnMappings[key]) {
                 return this.columnMappings[key].map(function(item) {
                   return {
                     name: key + '.' + item,
@@ -195,7 +195,7 @@
               attached here.
             */
             columns = columns.map(function(col) {
-              if (this.columnRenderers && !!this.columnRenderers[col.name]) {
+              if (!!this.columnRenderers[col.name]) {
                 col.renderer = this.columnRenderers[col.name];
               }
               return col;
