@@ -1,0 +1,121 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../bower_components/paper-menu-button/paper-menu-button-animations.html">
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+
+
+<dom-module id="lancie-admin-roles">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      paper-button.green {
+        background-color: var(--paper-green-500);
+        color: white;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="endpointAjax" refurl="users" on-lancie-ajax="onResponse">
+    </lancie-ajax>
+    <lancie-ajax id="ajaxRefresh" refurl="users" on-lancie-ajax="onResponse">
+    </lancie-ajax>
+    <lancie-ajax id="ajaxAddRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
+    
+    <lancie-admin-page-layout endpoint="roles">
+      <p>Add roles to selected users</p>
+
+
+      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+      
+      <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
+        <paper-dropdown-menu id="role" label="Roles">
+          <paper-listbox slot="dropdown-content" class="dropdown-content" on-iron-select="roleSelected">
+            <paper-item>Admin</paper-item>
+            <paper-item>Operator</paper-item>
+            <paper-item>Committee</paper-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <paper-button raised class="custom green" on-tap="addRoles">Add</paper-button>
+        <paper-button raised on-tap="deleteRoles">Delete</paper-button>
+      </lancie-form>
+    </lancie-admin-page-layout>
+
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-roles',
+        properties: {
+          data: Object,
+          mappings: {
+            type: Object,
+            value: function() {
+              return {
+                profile: ['displayName'],
+              };
+            }
+          },
+          renderers: {
+            type: Object,
+            value: function() {
+              return {};
+            }
+          }
+        },
+
+        onResponse: function (e, request) {
+          if (request.succeeded) {
+            this.$.table.setData(request.response);
+          }
+        },
+
+        addRoles: function () {
+          var selectedGroup = this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems
+          selectedGroup.forEach(s => this.addRole(s));
+          this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems = []
+          this.$.role._setSelectedItem()
+          this.$.ajaxRefresh.generateRequest()
+        },
+
+        addRole: function(selected) {
+          this.selected = selected
+          this.$.ajaxAddRole.generateRequest()
+        },
+
+        deleteRoles: function() {
+          var selectedGroup = this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems
+          selectedGroup.forEach(s => this.deleteRole(s));
+          this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems = []
+          this.$.role._setSelectedItem()
+          this.$.ajaxRefresh.generateRequest()
+        },
+
+        deleteRole: function(selected) {
+          this.selected = selected
+          this.$.ajaxDeleteRole.generateRequest()
+        },
+
+        roleSelected: function(e) {
+          var selected = e.target.selectedItem.innerText.toUpperCase()
+          console.log(selected)
+          this.selectedRole = "ROLE_" + selected
+        }
+      });
+    })();
+  </script>
+</dom-module>
