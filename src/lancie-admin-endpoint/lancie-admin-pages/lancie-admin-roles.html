@@ -1,6 +1,7 @@
 <link rel="import" href="../../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../../bower_components/paper-menu-button/paper-menu-button-animations.html">
@@ -12,13 +13,30 @@
 
 <dom-module id="lancie-admin-roles">
   <template>
+    <style include="iron-flex iron-flex-alignment"></style>
     <style>
       :host {
         display: block;
       }
 
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      iron-icon {
+        margin-right: 10px;
+      }
+
       [hidden] {
         display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
       }
 
       paper-button.green {
@@ -34,24 +52,28 @@
     <lancie-ajax id="ajaxAddRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role"></lancie-ajax>
     <lancie-ajax id="ajaxDeleteRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
     
-    <lancie-admin-page-layout endpoint="roles">
-      <p>Add roles to selected users</p>
+    <paper-card heading="Roles">
 
-
-      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
-      
-      <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
-        <paper-dropdown-menu id="role" label="Roles">
-          <paper-listbox slot="dropdown-content" class="dropdown-content" on-iron-select="roleSelected">
-            <paper-item>Admin</paper-item>
-            <paper-item>Operator</paper-item>
-            <paper-item>Committee</paper-item>
-          </paper-listbox>
-        </paper-dropdown-menu>
-        <paper-button raised class="custom green" on-tap="addRoles">Add</paper-button>
-        <paper-button raised on-tap="deleteRoles">Delete</paper-button>
-      </lancie-form>
-    </lancie-admin-page-layout>
+        <div class="card-content">
+          <p>Add roles to selected users</p>
+          <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+          
+          <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
+          
+            <paper-dropdown-menu id="role" label="Roles">
+              <paper-listbox slot="dropdown-content" class="dropdown-content" on-iron-select="roleSelected">
+                <paper-item>Admin</paper-item>
+                <paper-item>Operator</paper-item>
+                <paper-item>Committee</paper-item>
+              </paper-listbox>
+            </paper-dropdown-menu>
+          </lancie-form>
+        </div>
+        <div class="card-actions">
+          <paper-button on-tap="addRoles">Add</paper-button>
+          <paper-button on-tap="deleteRoles">Delete</paper-button>
+        </div>
+    </paper-card>
 
   </template>
   <script>
