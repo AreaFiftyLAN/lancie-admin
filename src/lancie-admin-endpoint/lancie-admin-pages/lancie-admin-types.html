@@ -1,27 +1,106 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../bower_components/lancie-form/lancie-form.html">
+<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="../../../bower_components/lancie-error/lancie-error.html">
+<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
 
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
 
+<link rel="import" href="lancie-admin-ticket-option.html">
+
 <dom-module id="lancie-admin-types">
   <template>
+    <style include="iron-flex iron-flex-alignment"></style>
     <style>
       :host {
         display: block;
       }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
     </style>
 
-    <lancie-ajax auto-fire id="endpointAjax" refurl="tickets/types" on-lancie-ajax="onResponse">
+    <lancie-ajax auto-fire id="getTypeAjax" refurl="tickets/types" on-lancie-ajax="onTypeResponse">
     </lancie-ajax>
+    <lancie-ajax auto-fire id="getOptionAjax" refurl="tickets/options" on-lancie-ajax="onOptionResponse"></lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="tickets/types">
-      <p>Here is where the types will be.</p>
-      <p>Requests will be on <code>/api/v1/tickets/types</code></p>
+    <paper-card heading="Tickets/types">
+      <div class="card-content">
+        <p>Here is where the types will be.</p>
+        <p>Requests will be on <code>/api/v1/tickets/types</code></p>
 
-      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
-    </lancie-admin-page-layout>
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+      </div>
+      <div class="card-actions">
+        <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
+      </div>
+    </paper-card>
 
+    <lancie-dialog id="addTicketTypeDialog">
+        <h2>Add Ticket Type</h2>
+        <div class="dialog-content">
+          <lancie-error id="addTypeDialogError"></lancie-error>
+          <lancie-form id="addTicketTypeForm" refurl="tickets/types" on-response="onAddTypeResponse">
+            <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
+            <paper-input label="Text" name="text" auto-validate required error-message="This field is required!"></paper-input>
+            <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
+            <paper-input label="Number Available" name="numberAvailable" type="number" auto-validate required error-message="This field is required!"></paper-input>
+            <paper-input label="Deadline" name="deadline" type="datetime-local" auto-validate required error-message="This field is required!"></paper-input>
+            <paper-dropdown-menu label="Buyable" name="buyable" auto-validate required error-message="This field is required!">
+              <paper-listbox slot="dropdown-content">
+                <paper-item>true</paper-item>
+                <paper-item>false</paper-item>
+              </paper-listbox>
+            </paper-dropdown-menu>
+          </lancie-form>
+        </div>
+        <div class="dialog-actions">
+          <paper-button on-tap="tryAddType">Add</paper-button>
+        </div>
+      </lancie-dialog>
+
+    <paper-card heading="Ticket Options">
+      <div class="card-content">
+        <lancie-error id="optionError"></lancie-error>
+        <template is="dom-repeat" items="[[options]]">
+          <lancie-admin-ticket-option option="[[item]]"></lancie-admin-ticket-option>
+        </template>
+      </div>
+      <div class="card-actions">
+        <paper-button on-tap="openAddOptionDialog">Add Ticket Option</paper-button>
+      </div> 
+    </paper-card>
+    <lancie-dialog id="addTicketOptionDialog">
+      <h2>Add Ticket Option</h2>
+      <div class="dialog-content">
+        <lancie-error id="addDialogError"></lancie-error>
+        <lancie-form id="addTicketOptionForm" refurl="tickets/options" on-response="onAddOptionResponse">
+          <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
+        </lancie-form>
+      </div>
+      <div class="dialog-actions">
+        <paper-button on-tap="tryAddOption">Add</paper-button>
+      </div>
+    </lancie-dialog>
   </template>
   <script>
     (function () {
@@ -56,6 +135,60 @@
         onResponse: function (e, request) {
           if (request.succeeded) {
             this.$.table.setData(request.response);
+          }
+        },
+
+        onAddTypeResponse: function(e, request) {
+          if (request.succeeded) {
+            this.$.addTicketTypeDialog.close();
+            this.$.getTypeAjax.generateRequest();
+          } else {
+            this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.")
+          }
+        },
+
+        onTypeResponse: function (e, request) {
+          if (request.succeeded) {
+            this.$.table.setData(request.response);
+          } else {
+            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.')
+          }
+        },
+
+        openAddTypeDialog: function () {
+          this.$.addTicketTypeForm.reset();
+          this.$.addTicketTypeDialog.open();
+        },
+
+        tryAddType: function(e, request) {
+          this.$.addTicketTypeForm.validateAndSubmit();
+          this.$.addTicketTypeForm.reset();
+        },
+
+        tryAddOption: function(e, request) {
+          this.$.addTicketOptionForm.validateAndSubmit();
+          this.$.addTicketOptionForm.reset();
+        },
+
+        openAddOptionDialog: function () {
+          this.$.addTicketOptionForm.reset();
+          this.$.addTicketOptionDialog.open();
+        },
+
+        onAddOptionResponse: function(e, request) {
+          if (request.succeeded) {
+            this.$.addTicketOptionDialog.close();
+            this.$.getOptionAjax.generateRequest();
+          } else {
+            this.$.addDialogError.setError("Could not add option. Please refresh and try again.")
+          }
+        },
+
+        onOptionResponse: function (e, request) {
+          if (request.succeeded) {
+            this.options = request.response;
+          } else {
+            this.$.optionError.setError('Could not retrieve options. Please refresh and try again.')
           }
         },
       });
