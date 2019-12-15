@@ -14,6 +14,7 @@
     "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-seats.html",
     "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-mail/lancie-admin-mail.html",
     "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-homepage-text.html",
+    "src/lancie-admin-endpoint/lancie-admin-pages/lancie-admin-roles.html",
     "src/lancie-admin-web/lancie-admin-web.html",
     "src/lancie-admin-rfid/lancie-admin-rfid-assign.html",
     "src/lancie-admin-rfid/lancie-admin-rfid-alcohol.html",
