@@ -46,6 +46,8 @@
 
     <lancie-ajax id="ajaxAddOptionToType" method="POST" refurl="tickets/types/[[selectedId]]/[[selectedOption]]"></lancie-ajax>
 
+    <lancie-ajax id="ajaxChangeBuyableOfType" method="POST" refurl="tickets/types/[[selectedId]]/buyable/[[buyableBool]]"></lancie-ajax>
+
     <paper-card heading="Tickets/types">
       <div class="card-content">
         <p>Here is where the types will be.</p>
@@ -56,7 +58,8 @@
       <div class="card-actions">
         <lancie-error id="noTypeSelectedError"></lancie-error>
         <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
-        <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option(s) To Type</paper-button>
+        <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option To Type(s)</paper-button>
+        <paper-button on-tap="openChangeBuyableDialog">Change Buyable</paper-button>
       </div>
     </paper-card>
 
@@ -105,6 +108,22 @@
         <paper-button on-tap="tryAddOptionToTypes">Add Option</paper-button>
       </div>
     </lancie-dialog>
+
+    <lancie-dialog id="changeBuyableOfTypeDialog">
+      <h2>Change Buyable Of Type</h2>
+      <div class="dialog-content">
+        <h4>Buyable will be changed for the following Types:</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryChangeBuyableOfTypes">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
+
 
     <paper-card heading="Ticket Options">
       <div class="card-content" on-delete-ticket-option-dialog="deleteTicketOptionDialog">
@@ -185,7 +204,7 @@
             this.$.addTicketTypeDialog.close();
             this.$.getTypeAjax.generateRequest();
           } else {
-            this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.")
+            this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.");
           }
         },
 
@@ -193,7 +212,7 @@
           if (request.succeeded) {
             this.$.table.setData(request.response);
           } else {
-            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.')
+            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.');
           }
         },
 
@@ -280,6 +299,30 @@
         tryAddOptionToType: function(t) {
           this.selectedId = t.id;
           this.$.ajaxAddOptionToType.generateRequest();
+        },
+
+        openChangeBuyableDialog: function() {
+          if (this.$.table.selected().length > 0) {
+            this.selectedTypes = this.$.table.selected();
+            this.$.noTypeSelectedError.clear();
+            this.$.typeSelected.render();
+            this.$.changeBuyableOfTypeDialog.open();
+          } else {
+            this.$.noTypeSelectedError.setError('Please select a type first.')
+          }
+        },
+
+        tryChangeBuyableOfTypes: function() {
+          this.selectedTypes.forEach(t => this.tryChangeBuyableOfType(t))
+          this.$.table.clearSelection();
+          this.$.changeBuyableOfTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryChangeBuyableOfType: function(t) {
+          this.selectedId = t.id;
+          this.buyableBool = !t.buyable
+          this.$.ajaxChangeBuyableOfType.generateRequest();
         }
 
       });
