@@ -38,16 +38,9 @@
           margin: 0;
         }
       }
-
-      paper-button.green {
-        background-color: var(--paper-green-500);
-        color: white;
-      }
     </style>
 
-    <lancie-ajax auto-fire id="endpointAjax" refurl="users" on-lancie-ajax="onResponse">
-    </lancie-ajax>
-    <lancie-ajax id="ajaxRefresh" refurl="users" on-lancie-ajax="onResponse">
+    <lancie-ajax auto-fire id="ajaxGetUsers" refurl="users" on-lancie-ajax="onResponse">
     </lancie-ajax>
     <lancie-ajax id="ajaxAddRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role"></lancie-ajax>
     <lancie-ajax id="ajaxDeleteRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
@@ -56,10 +49,10 @@
 
         <div class="card-content">
           <p>Add roles to selected users</p>
-          <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+          <lancie-error id="userError"></lancie-error>
+          <lancie-admin-table id="table" column-mappings="[[mappings]]"></lancie-admin-table>
           
-          <lancie-form id="addMemberForm" refurl="web/committee" on-response="onAddResponse">
-          
+          <lancie-form id="addRoleForm" refurl="web/committee" on-response="onAddResponse">
             <paper-dropdown-menu id="role" label="Roles">
               <paper-listbox slot="dropdown-content" class="dropdown-content" on-iron-select="roleSelected">
                 <paper-item>Admin</paper-item>
@@ -91,50 +84,52 @@
                 profile: ['displayName'],
               };
             }
-          },
-          renderers: {
-            type: Object,
-            value: function() {
-              return {};
-            }
           }
         },
 
-        onResponse: function (e, request) {
+        onResponse: function(e, request) {
           if (request.succeeded) {
             this.$.table.setData(request.response);
+          } else {
+            this.$.userError.setError('Could not retrieve users. Please refresh and try again.');
           }
         },
 
-        addRoles: function () {
-          var selectedGroup = this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems
+        addRoles: function() {
+          var selectedGroup = this.$.table.selected();
           selectedGroup.forEach(s => this.addRole(s));
-          this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems = []
-          this.$.role._setSelectedItem()
-          this.$.ajaxRefresh.generateRequest()
+          this.$.table.clearSelection();
+          this.$.role._setSelectedItem();
+          this.$.ajaxGetUsers.generateRequest();
         },
 
         addRole: function(selected) {
-          this.selected = selected
-          this.$.ajaxAddRole.generateRequest()
+          this.selected = selected;
+          this.$.ajaxAddRole.generateRequest();
         },
 
         deleteRoles: function() {
-          var selectedGroup = this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems
+          var selectedGroup = this.$.table.selected();
           selectedGroup.forEach(s => this.deleteRole(s));
-          this.$.table.shadowRoot.querySelector('vaadin-grid').selectedItems = []
-          this.$.role._setSelectedItem()
-          this.$.ajaxRefresh.generateRequest()
+          this.$.table.clearSelection();
+          this.$.role._setSelectedItem();
+          this.$.ajaxGetUsers.generateRequest();
         },
 
         deleteRole: function(selected) {
-          this.selected = selected
-          this.$.ajaxDeleteRole.generateRequest()
+          this.selected = selected;
+          this.$.ajaxDeleteRole.generateRequest();
         },
 
         roleSelected: function(e) {
-          var selected = e.target.selectedItem.innerText.toUpperCase()
-          this.selectedRole = "ROLE_" + selected
+          var selected = e.target.selectedItem.innerText.toUpperCase();
+          this.selectedRole = "ROLE_" + selected;
+        },
+
+        ajaxBody: function() {
+          return {
+            "role": [[selectedRole]]
+          }
         }
       });
     })();
