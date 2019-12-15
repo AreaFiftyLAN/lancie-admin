@@ -42,6 +42,9 @@
     <paper-item class="container flex-horizontal-with-ratios">
       <div class="flex2child">[[option.name]]</div>
       <div class="flexchild">Price: [[option.price]]</div>
+      <div class="flexchild align-right">
+        <iron-icon icon="icons:delete" on-tap="deleteTicketOptionDialog" class="delete-button"></iron-icon>
+      </div>
     </paper-item>
 
   </template>
@@ -58,6 +61,16 @@
           return {
             option: Object
           }
+        }
+
+        deleteTicketOptionDialog() {
+          this.dispatchEvent(new CustomEvent('delete-ticket-option-dialog', {
+            detail: {
+              id: this.option.id
+            },
+            bubbles: true,
+            composed: true
+          }));
         }
       }
 

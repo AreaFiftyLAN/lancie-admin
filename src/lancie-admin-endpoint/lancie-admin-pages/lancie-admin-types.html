@@ -42,6 +42,10 @@
     </lancie-ajax>
     <lancie-ajax auto-fire id="getOptionAjax" refurl="tickets/options" on-lancie-ajax="onOptionResponse"></lancie-ajax>
 
+    <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[deleteOption.id]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
+
+    <lancie-ajax id="ajaxAddOptionToType" method="POST"  refurl="tickets/types/[[selectedId]]/[[selectedOption]]"></lancie-ajax>
+
     <paper-card heading="Tickets/types">
       <div class="card-content">
         <p>Here is where the types will be.</p>
@@ -50,37 +54,62 @@
         <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
       <div class="card-actions">
+        <lancie-error id="noTypeSelectedError"></lancie-error>
         <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
+        <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option(s) To Type</paper-button>
       </div>
     </paper-card>
 
     <lancie-dialog id="addTicketTypeDialog">
-        <h2>Add Ticket Type</h2>
-        <div class="dialog-content">
-          <lancie-error id="addTypeDialogError"></lancie-error>
-          <lancie-form id="addTicketTypeForm" refurl="tickets/types" on-response="onAddTypeResponse">
-            <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
-            <paper-input label="Text" name="text" auto-validate required error-message="This field is required!"></paper-input>
-            <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
-            <paper-input label="Number Available" name="numberAvailable" type="number" auto-validate required error-message="This field is required!"></paper-input>
-            <paper-input label="Deadline" name="deadline" type="datetime-local" auto-validate required error-message="This field is required!"></paper-input>
-            <paper-dropdown-menu label="Buyable" name="buyable" auto-validate required error-message="This field is required!">
-              <paper-listbox slot="dropdown-content">
-                <paper-item>true</paper-item>
-                <paper-item>false</paper-item>
-              </paper-listbox>
-            </paper-dropdown-menu>
-          </lancie-form>
-        </div>
-        <div class="dialog-actions">
-          <paper-button on-tap="tryAddType">Add</paper-button>
-        </div>
-      </lancie-dialog>
+      <h2>Add Ticket Type</h2>
+      <div class="dialog-content">
+        <lancie-error id="addTypeDialogError"></lancie-error>
+        <lancie-form id="addTicketTypeForm" refurl="tickets/types" on-response="onAddTypeResponse">
+          <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Text" name="text" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Number Available" name="numberAvailable" type="number" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Deadline" name="deadline" type="datetime-local" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-dropdown-menu label="Buyable" name="buyable" auto-validate required error-message="This field is required!">
+            <paper-listbox slot="dropdown-content">
+              <paper-item>true</paper-item>
+              <paper-item>false</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </lancie-form>
+      </div>
+      <div class="dialog-actions">
+        <paper-button on-tap="tryAddType">Add</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="addOptionToTypeDialog">
+      <h2>Add Options to Type</h2>
+      <div class="dialog-content">
+        <h4>Options will be added to the following Ticket Types</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+        <h4>What Option do you want to add?</h4>
+        <paper-dropdown-menu label="Ticket Option">
+          <paper-listbox slot="dropdown-content" on-iron-select="optionSelected">
+            <template is="dom-repeat" items="[[options]]">
+              <paper-item>[[item.name]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryAddOptionToTypes">Add Option</paper-button>
+      </div>
+    </lancie-dialog>
 
     <paper-card heading="Ticket Options">
-      <div class="card-content">
+      <div class="card-content" on-delete-ticket-option-dialog="deleteTicketOptionDialog">
         <lancie-error id="optionError"></lancie-error>
-        <template is="dom-repeat" items="[[options]]">
+        <template is="dom-repeat" items="{{options}}">
           <lancie-admin-ticket-option option="[[item]]"></lancie-admin-ticket-option>
         </template>
       </div>
@@ -99,6 +128,19 @@
       </div>
       <div class="dialog-actions">
         <paper-button on-tap="tryAddOption">Add</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="deleteTicketOptionDialog">
+      <h2>Confirm deletion</h2>
+      <div class="dialog-content">
+        <lancie-error id="dialogError"></lancie-error>
+        <h4>Are you certain you want to delete this ticket option?</h4>
+        <p>[[deleteOption.name]]</p>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryOptionDelete" class="confirm-delete-button">Delete</paper-button>
       </div>
     </lancie-dialog>
   </template>
@@ -191,6 +233,55 @@
             this.$.optionError.setError('Could not retrieve options. Please refresh and try again.')
           }
         },
+
+        deleteTicketOptionDialog: function (event) {
+          console.log("Test")
+          this.deleteOption = this.options.filter(option => {
+            return option.id === event.detail.id;
+          })[0];
+          this.$.deleteTicketOptionDialog.open();
+        },
+
+        tryOptionDelete: function () {
+          this.$.ajaxDeleteTicketOption.generateRequest();
+        },
+
+        onOptionDeleteResponse: function (e, request) {
+          if (request.succeeded) {
+            this.$.deleteCommitteeMemberDialog.close();
+            this.$.getOptionAjax.generateRequest(); // Ensures we have a mirror of the latest server state
+          } else {
+            this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
+          }
+        },
+
+        openAddOptionToTypeDialog: function () {
+          if (this.$.table.selected().length > 0) {
+            this.selectedTypes = this.$.table.selected();
+            console.log(this.selectedTypes)
+            this.$.noTypeSelectedError.clear();
+            this.$.typeSelected.render();
+            this.$.addOptionToTypeDialog.open();
+          } else {
+            this.$.noTypeSelectedError.setError('Please select a type first.')
+          }
+        },
+
+        optionSelected: function (e) {
+          this.selectedOption = e.target.selectedItem.innerText
+        },
+
+        tryAddOptionToTypes: function () {
+          this.selectedTypes.forEach(t => this.tryAddOptionToType(t))
+          this.$.table.clearSelection();
+          this.$.addOptionToTypeDialog.close();
+        },
+
+        tryAddOptionToType: function (t) {
+          this.selectedId = t.id;
+          this.$.ajaxAddOptionToType.generateRequest();
+        }
+
       });
     })();
   </script>
