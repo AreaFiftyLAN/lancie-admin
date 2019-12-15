@@ -42,8 +42,8 @@
 
     <lancie-ajax auto-fire id="ajaxGetUsers" refurl="users" on-lancie-ajax="onResponse">
     </lancie-ajax>
-    <lancie-ajax id="ajaxAddRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role"></lancie-ajax>
-    <lancie-ajax id="ajaxDeleteRole" method="POST" body='{"role": "[[selectedRole]]"}' refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
+    <lancie-ajax id="ajaxAddRole" method="POST" body="[[getBody(selectedRole)]]" refurl="users/[[selected.id]]/role"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteRole" method="POST" body="[[getBody(selectedRole)]]" refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
     
     <paper-card heading="Roles">
 
@@ -126,9 +126,9 @@
           this.selectedRole = "ROLE_" + selected;
         },
 
-        ajaxBody: function() {
+        getBody: function(selectedRole) {
           return {
-            "role": [[selectedRole]]
+            "role": selectedRole
           }
         }
       });
