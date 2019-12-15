@@ -44,7 +44,7 @@
 
     <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[deleteOption.id]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
-    <lancie-ajax id="ajaxAddOptionToType" method="POST"  refurl="tickets/types/[[selectedId]]/[[selectedOption]]"></lancie-ajax>
+    <lancie-ajax id="ajaxAddOptionToType" method="POST" refurl="tickets/types/[[selectedId]]/[[selectedOption]]"></lancie-ajax>
 
     <paper-card heading="Tickets/types">
       <div class="card-content">
@@ -174,7 +174,7 @@
           }
         },
 
-        onResponse: function (e, request) {
+        onResponse: function(e, request) {
           if (request.succeeded) {
             this.$.table.setData(request.response);
           }
@@ -189,7 +189,7 @@
           }
         },
 
-        onTypeResponse: function (e, request) {
+        onTypeResponse: function(e, request) {
           if (request.succeeded) {
             this.$.table.setData(request.response);
           } else {
@@ -197,7 +197,7 @@
           }
         },
 
-        openAddTypeDialog: function () {
+        openAddTypeDialog: function() {
           this.$.addTicketTypeForm.reset();
           this.$.addTicketTypeDialog.open();
         },
@@ -212,7 +212,7 @@
           this.$.addTicketOptionForm.reset();
         },
 
-        openAddOptionDialog: function () {
+        openAddOptionDialog: function() {
           this.$.addTicketOptionForm.reset();
           this.$.addTicketOptionDialog.open();
         },
@@ -226,7 +226,7 @@
           }
         },
 
-        onOptionResponse: function (e, request) {
+        onOptionResponse: function(e, request) {
           if (request.succeeded) {
             this.options = request.response;
           } else {
@@ -234,7 +234,7 @@
           }
         },
 
-        deleteTicketOptionDialog: function (event) {
+        deleteTicketOptionDialog: function(event) {
           console.log("Test")
           this.deleteOption = this.options.filter(option => {
             return option.id === event.detail.id;
@@ -242,11 +242,11 @@
           this.$.deleteTicketOptionDialog.open();
         },
 
-        tryOptionDelete: function () {
+        tryOptionDelete: function() {
           this.$.ajaxDeleteTicketOption.generateRequest();
         },
 
-        onOptionDeleteResponse: function (e, request) {
+        onOptionDeleteResponse: function(e, request) {
           if (request.succeeded) {
             this.$.deleteCommitteeMemberDialog.close();
             this.$.getOptionAjax.generateRequest(); // Ensures we have a mirror of the latest server state
@@ -255,10 +255,9 @@
           }
         },
 
-        openAddOptionToTypeDialog: function () {
+        openAddOptionToTypeDialog: function() {
           if (this.$.table.selected().length > 0) {
             this.selectedTypes = this.$.table.selected();
-            console.log(this.selectedTypes)
             this.$.noTypeSelectedError.clear();
             this.$.typeSelected.render();
             this.$.addOptionToTypeDialog.open();
@@ -267,17 +266,18 @@
           }
         },
 
-        optionSelected: function (e) {
+        optionSelected: function(e) {
           this.selectedOption = e.target.selectedItem.innerText
         },
 
-        tryAddOptionToTypes: function () {
+        tryAddOptionToTypes: function() {
           this.selectedTypes.forEach(t => this.tryAddOptionToType(t))
           this.$.table.clearSelection();
           this.$.addOptionToTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
         },
 
-        tryAddOptionToType: function (t) {
+        tryAddOptionToType: function(t) {
           this.selectedId = t.id;
           this.$.ajaxAddOptionToType.generateRequest();
         }
