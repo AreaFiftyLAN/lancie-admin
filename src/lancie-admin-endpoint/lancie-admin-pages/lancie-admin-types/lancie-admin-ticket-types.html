@@ -1,19 +1,17 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
-<link rel="import" href="../../../bower_components/lancie-form/lancie-form.html">
-<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
-<link rel="import" href="../../../bower_components/lancie-error/lancie-error.html">
-<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../../bower_components/neon-animation/web-animations.html">
-<link rel="import" href="../../../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../../bower_components/lancie-form/lancie-form.html">
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="../../../../bower_components/lancie-error/lancie-error.html">
+<link rel="import" href="../../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
 
-<link rel="import" href="../lancie-admin-page-layout.html">
-<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+<link rel="import" href="../../lancie-admin-page-layout.html">
+<link rel="import" href="../../../lancie-admin-table/lancie-admin-table.html">
 
-<link rel="import" href="lancie-admin-ticket-option.html">
-
-<dom-module id="lancie-admin-types">
+<dom-module id="lancie-admin-ticket-types">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
     <style>
@@ -40,9 +38,6 @@
 
     <lancie-ajax auto-fire id="getTypeAjax" refurl="tickets/types" on-lancie-ajax="onTypeResponse">
     </lancie-ajax>
-    <lancie-ajax auto-fire id="getOptionAjax" refurl="tickets/options" on-lancie-ajax="onOptionResponse"></lancie-ajax>
-
-    <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[deleteOption.id]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
     <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
 
@@ -124,52 +119,15 @@
       </div>
     </lancie-dialog>
 
-
-    <paper-card heading="Ticket Options">
-      <div class="card-content" on-delete-ticket-option-dialog="deleteTicketOptionDialog">
-        <lancie-error id="optionError"></lancie-error>
-        <template is="dom-repeat" items="{{options}}">
-          <lancie-admin-ticket-option option="[[item]]"></lancie-admin-ticket-option>
-        </template>
-      </div>
-      <div class="card-actions">
-        <paper-button on-tap="openAddOptionDialog">Add Ticket Option</paper-button>
-      </div> 
-    </paper-card>
-    <lancie-dialog id="addTicketOptionDialog">
-      <h2>Add Ticket Option</h2>
-      <div class="dialog-content">
-        <lancie-error id="addDialogError"></lancie-error>
-        <lancie-form id="addTicketOptionForm" refurl="tickets/options" on-response="onAddOptionResponse">
-          <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
-          <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
-        </lancie-form>
-      </div>
-      <div class="dialog-actions">
-        <paper-button on-tap="tryAddOption">Add</paper-button>
-      </div>
-    </lancie-dialog>
-
-    <lancie-dialog id="deleteTicketOptionDialog">
-      <h2>Confirm deletion</h2>
-      <div class="dialog-content">
-        <lancie-error id="dialogError"></lancie-error>
-        <h4>Are you certain you want to delete this ticket option?</h4>
-        <p>[[deleteOption.name]]</p>
-      </div>
-      <div class="dialog-actions">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryOptionDelete" class="confirm-delete-button">Delete</paper-button>
-      </div>
-    </lancie-dialog>
   </template>
   <script>
     (function () {
       'use strict';
 
       Polymer({
-        is: 'lancie-admin-types',
+        is: 'lancie-admin-ticket-types',
         properties: {
+          options: Object,
           data: Object,
           mappings: {
             type: Object,
@@ -190,12 +148,6 @@
                 },
               };
             }
-          }
-        },
-
-        onResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.table.setData(request.response);
           }
         },
 
@@ -224,54 +176,6 @@
         tryAddType: function(e, request) {
           this.$.addTicketTypeForm.validateAndSubmit();
           this.$.addTicketTypeForm.reset();
-        },
-
-        tryAddOption: function(e, request) {
-          this.$.addTicketOptionForm.validateAndSubmit();
-          this.$.addTicketOptionForm.reset();
-        },
-
-        openAddOptionDialog: function() {
-          this.$.addTicketOptionForm.reset();
-          this.$.addTicketOptionDialog.open();
-        },
-
-        onAddOptionResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.addTicketOptionDialog.close();
-            this.$.getOptionAjax.generateRequest();
-          } else {
-            this.$.addDialogError.setError("Could not add option. Please refresh and try again.")
-          }
-        },
-
-        onOptionResponse: function(e, request) {
-          if (request.succeeded) {
-            this.options = request.response;
-          } else {
-            this.$.optionError.setError('Could not retrieve options. Please refresh and try again.')
-          }
-        },
-
-        deleteTicketOptionDialog: function(event) {
-          console.log("Test")
-          this.deleteOption = this.options.filter(option => {
-            return option.id === event.detail.id;
-          })[0];
-          this.$.deleteTicketOptionDialog.open();
-        },
-
-        tryOptionDelete: function() {
-          this.$.ajaxDeleteTicketOption.generateRequest();
-        },
-
-        onOptionDeleteResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.deleteCommitteeMemberDialog.close();
-            this.$.getOptionAjax.generateRequest(); // Ensures we have a mirror of the latest server state
-          } else {
-            this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
-          }
         },
 
         openAddOptionToTypeDialog: function() {
