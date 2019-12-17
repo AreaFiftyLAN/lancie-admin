@@ -45,7 +45,7 @@
     <paper-card heading="Ticket Options">
       <div class="card-content" on-delete-ticket-option-dialog="deleteTicketOptionDialog">
         <lancie-error id="optionError"></lancie-error>
-        <template is="dom-repeat" items="{{options}}">
+        <template is="dom-repeat" items="[[options]]">
           <lancie-admin-ticket-option option="[[item]]"></lancie-admin-ticket-option>
         </template>
       </div>
@@ -58,8 +58,8 @@
       <div class="dialog-content">
         <lancie-error id="addDialogError"></lancie-error>
         <lancie-form id="addTicketOptionForm" refurl="tickets/options" on-response="onAddOptionResponse">
-          <paper-input label="Name" name="name" auto-validate required error-message="This field is required!"></paper-input>
-          <paper-input label="Price" name="price" step=".01" type="number" auto-validate required error-message="This field is required!"></paper-input>
+          <paper-input label="Name" name="name" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-input label="Price" name="price" step=".01" type="number" error-message="This field is required!" auto-validate required></paper-input>
         </lancie-form>
       </div>
       <div class="dialog-actions">
@@ -76,7 +76,7 @@
       </div>
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryOptionDelete" class="confirm-delete-button">Delete</paper-button>
+        <paper-button on-tap="tryDeleteOption" class="confirm-delete-button">Delete</paper-button>
       </div>
     </lancie-dialog>
   </template>
@@ -101,7 +101,7 @@
               return {
                 possibleOptions: function(data) {
                   var text = data.reduce(function(text, t){
-                    return text + t.name + ' ' + t.price +', ';
+                    return `${text}${t.name} ${t.price}`.join(', ');
                   }, '');
                   return text.substr(0, text.length - 2);
                 },
@@ -110,54 +110,56 @@
           }
         },
 
-        tryAddOption: function(e, request) {
-          this.$.addTicketOptionForm.validateAndSubmit();
-          this.$.addTicketOptionForm.reset();
-        },
-
         openAddOptionDialog: function() {
           this.$.addTicketOptionForm.reset();
           this.$.addTicketOptionDialog.open();
         },
 
+        tryAddOption: function(e, request) {
+          this.$.addTicketOptionForm.validateAndSubmit();
+          this.$.addTicketOptionForm.reset();
+        },
+
         onAddOptionResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.addTicketOptionDialog.close();
-            this.$.getOptionAjax.generateRequest();
-          } else {
-            this.$.addDialogError.setError("Could not add option. Please refresh and try again.")
+          if (!request.succeeded) {
+            this.$.addDialogError.setError("Could not add option. Please refresh and try again.");
+            return;
           }
+
+          this.$.addTicketOptionDialog.close();
+          this.$.getOptionAjax.generateRequest(); 
         },
 
         deleteTicketOptionDialog: function(event) {
-          this.deleteOption = this.options.filter(option => {
+          this.deleteOption = this.options.find(option => {
             return option.id === event.detail.id;
-          })[0];
+          });
           this.$.deleteTicketOptionDialog.open();
         },
 
-        tryOptionDelete: function() {
+        tryDeleteOption: function() {
           this.$.ajaxDeleteTicketOption.generateRequest();
         },
 
         onOptionDeleteResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.deleteCommitteeMemberDialog.close();
-            this.$.getOptionAjax.generateRequest(); // Ensures we have a mirror of the latest server state
-          } else {
-            this.$.dialogError.setError('Something went wrong! Please refresh and try again.')
+          if (!request.succeeded) {
+            this.$.dialogError.setError('Something went wrong! Please refresh and try again.');
+            return;
           }
+
+          this.$.deleteCommitteeMemberDialog.close();
+          this.$.getOptionAjax.generateRequest(); // Ensures we have a mirror of the latest server state
         },
 
         onOptionResponse: function(e, request) {
-          if (request.succeeded) {
-            this.fire('set-options', {'options': request.response})
-            this.options = request.response;
-          } else {
-            this.$.optionError.setError('Could not retrieve options. Please refresh and try again.')
-        }
-      }
+          if (!request.succeeded) {
+            this.$.optionError.setError('Could not retrieve options. Please refresh and try again.');
+            return;
+          }
 
+          this.fire('set-options', {'options': request.response});
+          this.options = request.response;
+        }
       });
     })();
   </script>

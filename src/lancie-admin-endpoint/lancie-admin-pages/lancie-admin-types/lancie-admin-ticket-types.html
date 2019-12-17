@@ -41,7 +41,7 @@
 
     <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
 
-    <lancie-ajax id="ajaxChangeBuyableOfType" method="POST" body="[[getBuyableBody(buyableBool)]]" refurl="tickets/types/[[selectedId]]/buyable"></lancie-ajax>
+    <lancie-ajax id="ajaxChangeBuyableOfType" method="PUT" body="[[getBuyableBody(selectedType)]]" refurl="tickets/tickettype/[[selectedId]]"></lancie-ajax>
 
     <paper-card heading="Tickets/types">
       <div class="card-content">
@@ -141,13 +141,34 @@
             value: function() {
               return {
                 possibleOptions: function(data) {
-                  var text = data.reduce(function(text, t){
-                    return text + t.name + ' ' + t.price +', ';
-                  }, '');
-                  return text.substr(0, text.length - 2);
+                  return data.map(function(t){
+                    return `${t.name} ${t.price}`;
+                  }).join(', ');
                 },
               };
             }
+          }
+        },
+
+        onTypeResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.');
+            return;
+          }
+
+          this.$.table.setData(request.response);
+        },
+
+        openAddTypeDialog: function() {
+          this.$.addTicketTypeForm.reset();
+          this.$.addTicketTypeDialog.open();
+        },
+
+        tryAddType: function(e, request) {
+          var valid =  this.$.addTicketTypeForm.validate();
+          if (valid) {
+            this.$.addTicketTypeForm.submit();
+            this.$.addTicketTypeForm.reset();
           }
         },
 
@@ -158,24 +179,6 @@
           } else {
             this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.");
           }
-        },
-
-        onTypeResponse: function(e, request) {
-          if (request.succeeded) {
-            this.$.table.setData(request.response);
-          } else {
-            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.');
-          }
-        },
-
-        openAddTypeDialog: function() {
-          this.$.addTicketTypeForm.reset();
-          this.$.addTicketTypeDialog.open();
-        },
-
-        tryAddType: function(e, request) {
-          this.$.addTicketTypeForm.validateAndSubmit();
-          this.$.addTicketTypeForm.reset();
         },
 
         openAddOptionToTypeDialog: function() {
@@ -208,14 +211,14 @@
         },
 
         openChangeBuyableDialog: function() {
-          if (this.$.table.selected().length > 0) {
-            this.selectedTypes = this.$.table.selected();
-            this.$.noTypeSelectedError.clear();
-            this.$.typeSelected.render();
-            this.$.changeBuyableOfTypeDialog.open();
-          } else {
-            this.$.noTypeSelectedError.setError('Please select a type first.')
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
           }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.changeBuyableOfTypeDialog.open();
         },
 
         tryChangeBuyableOfTypes: function() {
@@ -226,17 +229,27 @@
         },
 
         tryChangeBuyableOfType: function(t) {
+          this.selectedType = t;
           this.selectedId = t.id;
           this.buyableBool = !t.buyable
           this.$.ajaxChangeBuyableOfType.generateRequest();
         },
 
         getOptionBody: function(selected) {
-          return '{"option": ' + JSON.stringify(selected) + '}';
+          return JSON.stringify(selected);
         },
 
         getBuyableBody: function(buyable) {
-          return '{"buyable": ' + buyable + '}'
+          return JSON.stringify({
+            "id": buyable.id,
+            "name": buyable.name,
+            "text": buyable.text,
+            "price": buyable.price,
+            "numberAvailable": buyable.numberAvailable,
+            "deadline": buyable.deadline,
+            "buyable": this.buyableBool,
+            "possibleOptions": buyable.possibleOptions
+          });
         }
 
       });
