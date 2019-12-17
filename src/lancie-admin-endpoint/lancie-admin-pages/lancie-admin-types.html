@@ -44,9 +44,9 @@
 
     <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[deleteOption.id]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
-    <lancie-ajax id="ajaxAddOptionToType" method="POST" refurl="tickets/types/[[selectedId]]/[[selectedOption]]"></lancie-ajax>
+    <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
 
-    <lancie-ajax id="ajaxChangeBuyableOfType" method="POST" refurl="tickets/types/[[selectedId]]/buyable/[[buyableBool]]"></lancie-ajax>
+    <lancie-ajax id="ajaxChangeBuyableOfType" method="POST" body="[[getBuyableBody(buyableBool)]]" refurl="tickets/types/[[selectedId]]/buyable"></lancie-ajax>
 
     <paper-card heading="Tickets/types">
       <div class="card-content">
@@ -286,7 +286,9 @@
         },
 
         optionSelected: function(e) {
-          this.selectedOption = e.target.selectedItem.innerText
+          this.selectedOption = this.options.filter(option => {
+            return option.name === e.target.selectedItem.innerText;
+          })[0];
         },
 
         tryAddOptionToTypes: function() {
@@ -323,6 +325,14 @@
           this.selectedId = t.id;
           this.buyableBool = !t.buyable
           this.$.ajaxChangeBuyableOfType.generateRequest();
+        },
+
+        getOptionBody: function(selected) {
+          return '{"option": ' + JSON.stringify(selected) + '}';
+        },
+
+        getBuyableBody: function(buyable) {
+          return '{"buyable": ' + buyable + '}'
         }
 
       });

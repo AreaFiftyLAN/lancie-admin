@@ -21,21 +21,23 @@
       .align-right {
         text-align: right;
       }
-    </style>
 
-    <custom-style>
-      <style is="custom-style">
-        .flex-horizontal-with-ratios {
-          @apply (--layout-horizontal);
-        }
-        .flexchild {
-          @apply (--layout-flex);
-        }
-        .flex-big-child {
-          @apply (--layout-flex-9);
-        }
-      </style>
-    </custom-style>
+      .flex-horizontal-with-ratios {
+        @apply (--layout-horizontal);
+      }
+      
+      .flexchild {
+        @apply (--layout-flex);
+      }
+      
+      .flex2child {
+        @apply (--layout-flex-4);
+      }
+
+      .flex3child {
+        @apply (--layout-flex-9);
+      }
+    </style>
 
     <paper-item class="container flex-horizontal-with-ratios">
       <div class="flexchild">[[item.id]]</div>
