@@ -1,0 +1,138 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-menu-button/paper-menu-button-animations.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+
+
+<dom-module id="lancie-admin-roles">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      iron-icon {
+        margin-right: 10px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="ajaxGetUsers" refurl="users" on-lancie-ajax="onResponse">
+    </lancie-ajax>
+    <lancie-ajax id="ajaxAddRole" method="POST" body="[[getBody(selectedRole)]]" refurl="users/[[selected.id]]/role"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteRole" method="POST" body="[[getBody(selectedRole)]]" refurl="users/[[selected.id]]/role/delete"></lancie-ajax>
+    
+    <paper-card heading="Roles">
+
+        <div class="card-content">
+          <p>Add roles to selected users</p>
+          <lancie-error id="userError"></lancie-error>
+          <lancie-admin-table id="table" column-mappings="[[mappings]]"></lancie-admin-table>
+          
+          <lancie-form id="addRoleForm" refurl="web/committee" on-response="onAddResponse">
+            <paper-dropdown-menu id="role" label="Roles">
+              <paper-listbox slot="dropdown-content" class="dropdown-content" on-iron-select="roleSelected">
+                <paper-item>Admin</paper-item>
+                <paper-item>Operator</paper-item>
+                <paper-item>Committee</paper-item>
+              </paper-listbox>
+            </paper-dropdown-menu>
+          </lancie-form>
+        </div>
+        <div class="card-actions">
+          <paper-button on-tap="addRoles">Add</paper-button>
+          <paper-button on-tap="deleteRoles">Delete</paper-button>
+        </div>
+    </paper-card>
+
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-roles',
+        properties: {
+          data: Object,
+          mappings: {
+            type: Object,
+            value: function() {
+              return {
+                profile: ['displayName'],
+              };
+            }
+          }
+        },
+
+        onResponse: function(e, request) {
+          this.$.userError.clear();
+          if (request.succeeded) {
+            this.$.table.setData(request.response);
+          } else {
+            this.$.userError.setError('Could not retrieve users. Please refresh and try again.');
+          }
+        },
+
+        addRoles: function() {
+          var selectedGroup = this.$.table.selected();
+          selectedGroup.forEach(s => this.addRole(s));
+          this.$.table.clearSelection();
+          this.$.role._setSelectedItem();
+          this.$.ajaxGetUsers.generateRequest();
+        },
+
+        addRole: function(selected) {
+          this.selected = selected;
+          this.$.ajaxAddRole.generateRequest();
+        },
+
+        deleteRoles: function() {
+          var selectedGroup = this.$.table.selected();
+          selectedGroup.forEach(s => this.deleteRole(s));
+          this.$.table.clearSelection();
+          this.$.role._setSelectedItem();
+          this.$.ajaxGetUsers.generateRequest();
+        },
+
+        deleteRole: function(selected) {
+          this.selected = selected;
+          this.$.ajaxDeleteRole.generateRequest();
+        },
+
+        roleSelected: function(e) {
+          var selected = e.target.selectedItem.innerText.toUpperCase();
+          this.selectedRole = "ROLE_" + selected;
+        },
+
+        getBody: function(selectedRole) {
+          return {
+            "role": selectedRole
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>
