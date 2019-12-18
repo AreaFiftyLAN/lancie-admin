@@ -100,10 +100,9 @@
             value: function() {
               return {
                 possibleOptions: function(data) {
-                  var text = data.reduce(function(text, t){
-                    return `${text}${t.name} ${t.price}`.join(', ');
-                  }, '');
-                  return text.substr(0, text.length - 2);
+                  return data.map(function(t){
+                    return `${t.name} ${t.price}`;
+                  }).join(', ');
                 },
               };
             }
@@ -116,8 +115,9 @@
         },
 
         tryAddOption: function(e, request) {
-          this.$.addTicketOptionForm.validateAndSubmit();
-          this.$.addTicketOptionForm.reset();
+          if (this.$.addTicketOptionForm.validateAndSubmit()) {
+            this.$.addTicketOptionForm.reset();
+          }
         },
 
         onAddOptionResponse: function(e, request) {
