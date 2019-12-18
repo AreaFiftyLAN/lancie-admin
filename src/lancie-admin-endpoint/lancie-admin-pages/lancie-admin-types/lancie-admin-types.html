@@ -1,0 +1,46 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="lancie-admin-ticket-types.html">
+<link rel="import" href="lancie-admin-ticket-options.html">
+
+<dom-module id="lancie-admin-types">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-admin-ticket-types options=[[options]]></lancie-admin-ticket-types>
+    <lancie-admin-ticket-options></lancie-admin-ticket-options>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      class LancieAdminTypes extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-types';
+        }
+
+        static get properties() {
+          return {
+            options: Object
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.addEventListener('set-options', (e) => this.setOptions(e));
+        }
+
+        setOptions(event) {
+          this.options = event.detail.options;
+        }
+      }
+
+      customElements.define(LancieAdminTypes.is, LancieAdminTypes);
+    })();
+  </script>
+</dom-module>

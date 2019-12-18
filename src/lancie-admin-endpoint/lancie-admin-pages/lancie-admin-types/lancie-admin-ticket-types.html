@@ -1,0 +1,255 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../../bower_components/lancie-form/lancie-form.html">
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="../../../../bower_components/lancie-error/lancie-error.html">
+<link rel="import" href="../../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../../lancie-admin-page-layout.html">
+<link rel="import" href="../../../lancie-admin-table/lancie-admin-table.html">
+
+<dom-module id="lancie-admin-ticket-types">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="getTypeAjax" refurl="tickets/types" on-lancie-ajax="onTypeResponse">
+    </lancie-ajax>
+
+    <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
+
+    <lancie-ajax id="ajaxChangeBuyableOfType" method="PUT" body="[[getBuyableBody(selectedType)]]" refurl="tickets/tickettype/[[selectedId]]"></lancie-ajax>
+
+    <paper-card heading="Tickets/types">
+      <div class="card-content">
+        <p>Here is where the types will be.</p>
+        <p>Requests will be on <code>/api/v1/tickets/types</code></p>
+
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+      </div>
+      <div class="card-actions">
+        <lancie-error id="noTypeSelectedError"></lancie-error>
+        <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
+        <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option To Type(s)</paper-button>
+        <paper-button on-tap="openChangeBuyableDialog">Change Buyable</paper-button>
+      </div>
+    </paper-card>
+
+    <lancie-dialog id="addTicketTypeDialog">
+      <h2>Add Ticket Type</h2>
+      <div class="dialog-content">
+        <lancie-error id="addTypeDialogError"></lancie-error>
+        <lancie-form id="addTicketTypeForm" refurl="tickets/types" on-response="onAddTypeResponse">
+          <paper-input label="Name" name="name" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-input label="Text" name="text" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-input label="Price" name="price" step=".01" type="number" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-input label="Number Available" name="numberAvailable" type="number" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-input label="Deadline" name="deadline" type="datetime-local" error-message="This field is required!" auto-validate required></paper-input>
+          <paper-dropdown-menu label="Buyable" name="buyable" error-message="This field is required!" auto-validate required>
+            <paper-listbox slot="dropdown-content">
+              <paper-item>true</paper-item>
+              <paper-item>false</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </lancie-form>
+      </div>
+      <div class="dialog-actions">
+        <paper-button on-tap="tryAddType">Add</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="addOptionToTypeDialog">
+      <h2>Add Options to Type</h2>
+      <div class="dialog-content">
+        <h4>Options will be added to the following Ticket Types</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+        <h4>What Option do you want to add?</h4>
+        <paper-dropdown-menu label="Ticket Option">
+          <paper-listbox slot="dropdown-content" on-iron-select="optionSelected">
+            <template is="dom-repeat" items="[[options]]">
+              <paper-item>[[item.name]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryAddOptionToTypes">Add Option</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="changeBuyableOfTypeDialog">
+      <h2>Change Buyable Of Type</h2>
+      <div class="dialog-content">
+        <h4>Buyable will be changed for the following Types:</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryChangeBuyableOfTypes">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
+
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-ticket-types',
+        properties: {
+          options: Object,
+          data: Object,
+          mappings: {
+            type: Object,
+            value: () => {
+              return {};
+            }
+          },
+          renderers: {
+            type: Object,
+            value: () => {
+              return {
+                possibleOptions: function(data) {
+                  return data.map(function(t){
+                    return `${t.name} ${t.price}`;
+                  }).join(', ');
+                },
+              };
+            }
+          }
+        },
+
+        onTypeResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.optionError.setError('Could not retrieve ticket types. Please refresh and try again.');
+            return;
+          }
+
+          this.$.table.setData(request.response);
+        },
+
+        openAddTypeDialog: function() {
+          this.$.addTicketTypeForm.reset();
+          this.$.addTicketTypeDialog.open();
+        },
+
+        tryAddType: function(e, request) {
+          if (this.$.addTicketTypeForm.validateAndSubmit()) {
+            this.$.addTicketTypeForm.reset();
+          }
+        },
+
+        onAddTypeResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.");
+            return;
+          } 
+
+          this.$.addTicketTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        openAddOptionToTypeDialog: function() {
+          if (this.$.table.selected().length > 0) {
+            this.selectedTypes = this.$.table.selected();
+            this.$.noTypeSelectedError.clear();
+            this.$.typeSelected.render();
+            this.$.addOptionToTypeDialog.open();
+          } else {
+            this.$.noTypeSelectedError.setError('Please select a type first.')
+          }
+        },
+
+        optionSelected: function(e) {
+          this.selectedOption = this.options.filter(option => {
+            return option.name === e.target.selectedItem.innerText;
+          })[0];
+        },
+
+        tryAddOptionToTypes: function() {
+          this.selectedTypes.forEach(t => this.tryAddOptionToType(t))
+          this.$.table.clearSelection();
+          this.$.addOptionToTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryAddOptionToType: function(t) {
+          this.selectedId = t.id;
+          this.$.ajaxAddOptionToType.generateRequest();
+        },
+
+        openChangeBuyableDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.changeBuyableOfTypeDialog.open();
+        },
+
+        tryChangeBuyableOfTypes: function() {
+          this.selectedTypes.forEach(t => this.tryChangeBuyableOfType(t))
+          this.$.table.clearSelection();
+          this.$.changeBuyableOfTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryChangeBuyableOfType: function(t) {
+          this.selectedType = t;
+          this.selectedId = t.id;
+          this.$.ajaxChangeBuyableOfType.generateRequest();
+        },
+
+        getOptionBody: function(selected) {
+          return selected;
+        },
+
+        getBuyableBody: function(buyable) {
+          return {
+            "id": buyable.id,
+            "name": buyable.name,
+            "text": buyable.text,
+            "price": buyable.price,
+            "numberAvailable": buyable.numberAvailable,
+            "deadline": buyable.deadline,
+            "buyable": !buyable.buyable,
+            "possibleOptions": buyable.possibleOptions
+          };
+        }
+
+      });
+    })();
+  </script>
+</dom-module>

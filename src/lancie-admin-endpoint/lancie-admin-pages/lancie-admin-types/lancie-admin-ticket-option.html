@@ -1,0 +1,79 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="lancie-admin-ticket-option">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      iron-icon {
+        margin-right: 10px;
+      }
+
+      .delete-button {
+        cursor: pointer;
+      }
+
+      .align-right {
+        text-align: right;
+      }
+
+      .flex-horizontal-with-ratios {
+        @apply (--layout-horizontal);
+      }
+      
+      .flexchild {
+        @apply (--layout-flex);
+      }
+      
+      .flex2child {
+        @apply (--layout-flex-4);
+      }
+
+      .flex3child {
+        @apply (--layout-flex-9);
+      }
+    </style>
+
+    <paper-item class="container flex-horizontal-with-ratios">
+      <div class="flex2child">[[option.name]]</div>
+      <div class="flexchild">Price: [[option.price]]</div>
+      <div class="flexchild align-right">
+        <iron-icon icon="icons:delete" on-tap="deleteTicketOptionDialog" class="delete-button"></iron-icon>
+      </div>
+    </paper-item>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      class LancieAdminTicketOption extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-ticket-option';
+        }
+
+        static get properties() {
+          return {
+            option: Object
+          }
+        }
+
+        deleteTicketOptionDialog() {
+          this.dispatchEvent(new CustomEvent('delete-ticket-option-dialog', {
+            detail: {
+              id: this.option.id
+            },
+            bubbles: true,
+            composed: true
+          }));
+        }
+      }
+
+      customElements.define(LancieAdminTicketOption.is, LancieAdminTicketOption);
+    })();
+  </script>
+</dom-module>
