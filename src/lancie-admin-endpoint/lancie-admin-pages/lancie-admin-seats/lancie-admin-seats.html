@@ -17,276 +17,275 @@
 <dom-module id="lancie-admin-seats">
   <template>
     <style>
-    :host {
-      display: block;
-      padding: 32px;
-    }
-
-    @media(max-width: 600px) {
       :host {
-        padding: 8px;
+        display: block;
+        padding: 32px;
       }
-    }
 
-    [hidden] {
-      display: none !important;
-    }
+      @media(max-width: 600px) {
+        :host {
+          padding: 8px;
+        }
+      }
 
-    .seatmap-row {
-      padding: 16px;
-    }
+      [hidden] {
+        display: none !important;
+      }
 
-    .seatmap-row .seats-group {
-      width: 100px;
-      display: flex;
-      flex-wrap: wrap;
-    }
+      .seatmap-row {
+        padding: 16px;
+      }
 
-    .seatmap {
-      overflow: auto;
-    }
+      .seatmap-row .seats-group {
+        width: 100px;
+        display: flex;
+        flex-wrap: wrap;
+      }
 
-    .seatmapwrapper{
-      display: flex;
-      justify-content: space-around;
-    }
+      .add-seat {
+        text-align: center;
+        width: 100px;
+        color: var(--secondary-color);
+        font-size: 32px;
+        font-weight: bold;
+        background: var(--primary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12),
+          0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
 
-    .grouplabel {
-      text-align: center;
-      width: 100%;
-      color: var(--secondary-color);
-      font-size: 32px;
-      font-weight: bold;
-      background: var(--primary-color);
-      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    }
+      .seatmap {
+        overflow: auto;
+      }
 
-    .non-seat-group {
-      min-width: 810px;
-      margin-top: 60px;
-      display: flex;
-    }
+      .seatmapwrapper {
+        display: flex;
+        justify-content: space-around;
+      }
 
-    .non-seat-group > div {
-      background-color: var(--paper-grey-500);
-      display: inline-block;
-      text-align: center;
-    }
+      .grouplabel {
+        text-align: center;
+        width: 100%;
+        color: var(--secondary-color);
+        font-size: 32px;
+        font-weight: bold;
+        background: var(--primary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12),
+          0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
 
-    .non-seat-group > div > div {
-      position: relative;
-      color: #fff;
-      width: 100%;
-      top: calc(50% - 0.75em);
-    }
+      .non-seat-group {
+        min-width: 810px;
+        margin-top: 60px;
+        display: flex;
+      }
 
-    .non-seat-group iron-icon {
-      --iron-icon-height: 56px;
-      --iron-icon-width: 56px;
-    }
+      .non-seat-group>div {
+        background-color: var(--paper-grey-500);
+        display: inline-block;
+        text-align: center;
+      }
 
-    .lounge {
-      width: 300px;
-      height: 450px;
-    }
+      .non-seat-group>div>div {
+        position: relative;
+        color: #fff;
+        width: 100%;
+        top: calc(50% - 0.75em);
+      }
 
-    .stage {
-      width: 315px;
-      height: 180px;
-      margin-top: 270px;
-    }
+      .non-seat-group iron-icon {
+        --iron-icon-height: 56px;
+        --iron-icon-width: 56px;
+      }
 
-    .entrance {
-      width: 195px;
-      height: 330px;
-      margin-top: 120px;
-    }
+      .lounge {
+        width: 300px;
+        height: 450px;
+      }
 
-    #listbox {
-      overflow-y: auto;
-      max-height: 40vh;
-    }
+      .stage {
+        width: 315px;
+        height: 180px;
+        margin-top: 270px;
+      }
 
-    .seats {
-      display: flex;
-    }
+      .entrance {
+        width: 195px;
+        height: 330px;
+        margin-top: 120px;
+      }
 
-    .team-member {
-      cursor: pointer;
-    }
+      #listbox {
+        overflow-y: auto;
+        max-height: 40vh;
+      }
+
+      .seats {
+        display: flex;
+      }
+
+      .team-member {
+        cursor: pointer;
+      }
     </style>
 
-    
-<lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
-<lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
-<lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
+    <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
 
-<paper-input label="Search user" value="{{filterUser}}"></paper-input>
-<div class="seatmapwrapper">
-  <div class="seatmap">
-     <div class="seats">
-        <template is="dom-repeat" items='[[seatGroups]]'>
-           <div class="seatmap-row">
+    <paper-input label="Search user" value="{{filterUser}}"></paper-input>
+    <div class="seatmapwrapper">
+      <div class="seatmap">
+        <div class="seats">
+          <template is="dom-repeat" items='[[seatGroups]]'>
+            <div class="seatmap-row">
               <div class="grouplabel">[[item]]</div>
               <div class="seats-group">
-                 <template is="dom-repeat" items="[[_getSeatGroup(seats, item)]]">
-                    <lancie-seat tickets="[[tickets]]" filter="[[filterUser]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-seat>
-                 </template>
+                <template is="dom-repeat" items="[[_getSeatGroup(seats, item)]]">
+                  <lancie-admin-seat tickets="[[tickets]]" filter="[[filterUser]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-admin-seat>
+                </template>
               </div>
-           </div>
-        </template>
-     </div>
-     <div class="non-seat-group">
-        <div class="lounge">
-           <div>Lounge</div>
+            </div>
+          </template>
+          <div class="seatmap-row">
+          <div class="add-seat">+ </div>
+          </div>
         </div>
-        <div class="stage">
-           <div>Stage</div>
-        </div>
-        <div class="entrance">
-           <div>Entrance</div>
-           <div>
+        <div class="non-seat-group">
+          <div class="lounge">
+            <div>Lounge</div>
+          </div>
+          <div class="stage">
+            <div>Stage</div>
+          </div>
+          <div class="entrance">
+            <div>Entrance</div>
+            <div>
               <iron-icon icon="lancie:arrow-downward"></iron-icon>
-           </div>
+            </div>
+          </div>
         </div>
-     </div>
-  </div>
-</div>
+      </div>
+    </div>
 
-<lancie-dialog id="seatDialog">
-<h2>Seat reservation</h2>
-<div class="dialog-content">
-  <lancie-error id="error"></lancie-error>
-  <div hidden$="[[!_checkExists(tickets)]]">
-    <p>Select the user to reserve this seat for:</p>
-    <paper-listbox id="listbox">
-      <template is="dom-repeat" items="[[tickets]]">
-          <paper-item data-ticket$="[[item.id]]" class="team-member">[[item.owner.profile.displayName]]</paper-item>
-        </template>
-    </paper-listbox>
-  </div>
-  <div hidden$="[[_checkExists(tickets)]]">
-    <p>You need at least one ticket to reserve a seat!</p>
-  </div>
-</div>
-<div class="dialog-actions">
-  <paper-button dialog-dismiss>Close</paper-button>
-  <paper-button on-tap="reserveSeat" hidden$="[[!_checkExists(tickets)]]">Reserve seat</paper-button>
-</div>
-</lancie-dialog>
-</template>
-<script>
-class LancieSeatmap extends Polymer.Element {
-  static get is() {
-    return 'lancie-seatmap';
-  }
+    <lancie-dialog id=seatDialog>
 
-  static get properties() {
-    return {
-      user: Object,
-      seats: {
-        type: Array,
-        value: () => [],
-      },
-      seatToReserve: Object,
-      tickets: {
-        type: Array,
-        value: () => [],
-      },
-      fixed: {
-        type: Boolean,
-        notify: true
-      },
-      seatGroups: Array
-    };
-  }
+    </lancie-dialog>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+      class LancieAdminSeats extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-seats';
+        }
 
-  ready() {
-    super.ready();
-    this.addEventListener('request-seat-reserve', (e) => this.openReservationDialog(e));
-  }
+        static get properties() {
+          return {
+            user: Object,
+            seats: {
+              type: Array,
+              value: () => [],
+            },
+            seatToReserve: Object,
+            tickets: {
+              type: Array,
+              value: () => [],
+            },
+            fixed: {
+              type: Boolean,
+              notify: true
+            },
+            seatGroups: Array
+          };
+        }
 
-  refreshSeats() {
-    this.dispatchEvent(new CustomEvent('toast', {
-      detail: {text: 'Seat reservation succeeded!', duration: 3000},
-      bubbles: true,
-      composed: true
-    }));
-    this.$.ajaxGetAllSeats.generateRequest();
-  }
+        ready() {
+          super.ready();
+          this.addEventListener('request-seat-reserve', (e) => this.openReservationDialog(e));
+        }
 
-  onGetAllSeats(e, request) {
-    if (!request.succeeded) {
-      this.dispatchEvent(new CustomEvent('toast', {
-        detail: {text: 'Something went wrong, please refresh the page!', duration: 8000},
-        bubbles: true,
-        composed: true
-      }));
-      return;
-    }
-    const seatMap = request.response.seatmap;
-    const groups = Object.keys(seatMap);
-    this.set('seatGroups', groups);
+          refreshSeats() {
+            this.dispatchEvent(new CustomEvent('toast', {
+              detail: { text: 'Seat reservation succeeded!', duration: 3000 },
+              bubbles: true,
+              composed: true
+            }));
+            this.$.ajaxGetAllSeats.generateRequest();
+          }
 
-    let seats = groups.map(x => seatMap[x]);
-    for (let group of seats) {
-      group.sort((a, b) => a.seatNumber - b.seatNumber);
-    }
+          onGetAllSeats(e, request) {
+            if (!request.succeeded) {
+              this.dispatchEvent(new CustomEvent('toast', {
+                detail: { text: 'Something went wrong, please refresh the page!', duration: 8000 },
+                bubbles: true,
+                composed: true
+              }));
+              return;
+            }
+            const seatMap = request.response.seatmap;
+            const groups = Object.keys(seatMap);
+            this.set('seatGroups', groups);
 
-    this.seats = seats;
-  }
+            let seats = groups.map(x => seatMap[x]);
+            for (let group of seats) {
+              group.sort((a, b) => a.seatNumber - b.seatNumber);
+            }
 
-  onGetTeamTickets(e, request) {
-    if (!request.succeeded) {
-      this.dispatchEvent(new CustomEvent('refreshToast', {bubbles: true, composed: true}));
-      return;
-    }
-    this.set('tickets', request.response);
-  }
+            this.seats = seats;
+          }
 
-  reserveSeat() {
-    this.$.error.clear();
-    if (!this.$.listbox.selectedItem) {
-      this.$.error.setError('Please select a user.');
-      return;
-    }
-    const seat = this.seatToReserve;
-    const ticket = this.$.listbox.selectedItem.dataset.ticket;
-    this.$.ajaxReserveSeat.refurl = `seats/${seat.seatGroup}/${seat.seatNumber}/${ticket}`;
-    this.$.ajaxReserveSeat.generateRequest();
-  }
+          onGetTeamTickets(e, request) {
+            if (!request.succeeded) {
+              this.dispatchEvent(new CustomEvent('refreshToast', { bubbles: true, composed: true }));
+              return;
+            }
+            this.set('tickets', request.response);
+          }
 
-  onReserveSeat(e, request) {
-    if (request.succeeded) {
-      this.$.listbox.selected = undefined;
-      this.refreshSeats();
-      this.$.seatDialog.close();
-    } else {
-      if (request.request.status === 409) {
-        this.$.error.setError('Seat is already taken.');
-      } else {
-        this.$.error.setError('Something went wrong, please refresh and try again.');
+          reserveSeat() {
+            this.$.error.clear();
+            if (!this.$.listbox.selectedItem) {
+              this.$.error.setError('Please select a user.');
+              return;
+            }
+            const seat = this.seatToReserve;
+            const ticket = this.$.listbox.selectedItem.dataset.ticket;
+            this.$.ajaxReserveSeat.refurl = `seats/${seat.seatGroup}/${seat.seatNumber}/${ticket}`;
+            this.$.ajaxReserveSeat.generateRequest();
+          }
+
+          onReserveSeat(e, request) {
+            if (request.succeeded) {
+              this.$.listbox.selected = undefined;
+              this.refreshSeats();
+              this.$.seatDialog.close();
+            } else {
+              if (request.request.status === 409) {
+                this.$.error.setError('Seat is already taken.');
+              } else {
+                this.$.error.setError('Something went wrong, please refresh and try again.');
+              }
+            }
+          }
+
+          openReservationDialog(event) {
+            this.seatToReserve = event.detail.seatToReserve;
+            this.$.error.clear();
+            this.$.seatDialog.open();
+          }
+
+          _getSeatGroup(seats, group) {
+            return seats[this.seatGroups.indexOf(group)];
+          }
+
+          _checkExists(tickets) {
+            return tickets.filter(ticket => ticket.valid === true).length > 0;
+          }
       }
-    }
-  }
 
-  openReservationDialog(event) {
-    this.seatToReserve = event.detail.seatToReserve;
-    this.$.error.clear();
-    this.$.seatDialog.open();
-  }
-
-  _getSeatGroup(seats, group) {
-    return seats[this.seatGroups.indexOf(group)];
-  }
-
-  _checkExists(tickets) {
-    return tickets.filter(ticket => ticket.valid === true).length > 0;
-  }
-}
-
-customElements.define(LancieSeatmap.is, LancieSeatmap);
-</script>
+      customElements.define(LancieAdminSeats.is, LancieAdminSeats);
+    })();
+  </script>
 </dom-module>
