@@ -162,21 +162,18 @@
       <h2>Seat reservation</h2>
       <div class="dialog-content">
         <lancie-error id="error"></lancie-error>
-        <div hidden$="[[!_checkExists(tickets)]]">
-          <p>Select the user to reserve this seat for:</p>
-          <paper-listbox id="listbox">
-            <template is="dom-repeat" items="[[tickets]]">
-                <paper-item data-ticket$="[[item.id]]" class="team-member">[[item.owner.profile.displayName]]</paper-item>
-              </template>
-          </paper-listbox>
+        <div hidden$="[[_checkSeatTaken(seatToEdit)]]">
+          <h4>Seat currently taken by:</h4>
+          <p>[[seatToEdit.ticket.owner.profile.displayName]]</p>
+          
         </div>
-        <div hidden$="[[_checkExists(tickets)]]">
-          <p>You need at least one ticket to reserve a seat!</p>
+        <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
+          <p>Seat is still available</p>
         </div>
       </div>
       <div class="dialog-actions">
+        <paper-button on-tap="lockSeat">Lock seat</paper-button>
         <paper-button dialog-dismiss>Close</paper-button>
-        <paper-button on-tap="reserveSeat" hidden$="[[!_checkExists(tickets)]]">Reserve seat</paper-button>
       </div>
     </lancie-dialog>
 
@@ -239,13 +236,14 @@
               notify: true
             },
             seatGroups: Array,
-            seatGroup: Object
+            seatGroup: Object,
+            seatToEdit: Object
           };
         }
 
         ready() {
           super.ready();
-          this.addEventListener('request-seat-reserve', (e) => this.openReservationDialog(e));
+          this.addEventListener('request-seat-edit', (e) => this.openSeatEditDialog(e));
         }
 
           refreshSeats() {
@@ -330,6 +328,10 @@
             this.$.ajaxRemoveSeats.generateRequest();
           }
 
+          lockSeat() {
+            console.log("Locking seat")
+          }
+
           onRemoveSeats(e, request) {
             this.$.seatRemoveDialog.close();
             this.$.ajaxGetAllSeats.generateRequest();
@@ -361,8 +363,9 @@
             }
           }
 
-          openReservationDialog(event) {
-            this.seatToReserve = event.detail.seatToReserve;
+          openSeatEditDialog(event) {
+            this.seatToEdit = event.detail.seatToEdit;
+            console.log(this.seatToEdit)
             this.$.error.clear();
             this.$.seatDialog.open();
           }
@@ -373,6 +376,10 @@
 
           _checkExists(tickets) {
             return tickets.filter(ticket => ticket.valid === true).length > 0;
+          }
+
+          _checkSeatTaken(seat) {
+            return seat.ticket === null;
           }
       }
 

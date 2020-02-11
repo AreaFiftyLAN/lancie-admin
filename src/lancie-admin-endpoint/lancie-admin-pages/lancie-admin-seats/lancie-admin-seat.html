@@ -95,10 +95,7 @@
         }
       },
       showSeatDialog: function() {
-        if (this.seat.locked || this.seat.ticket) {
-          return;
-        }
-        this.fire('request-seat-reserve', {'seatToReserve': this.seat});
+        this.fire('request-seat-edit', {'seatToEdit': this.seat});
       },
       _calculateSeatColor: function(user, tickets, seat, filter) {
         if (seat.locked) {
