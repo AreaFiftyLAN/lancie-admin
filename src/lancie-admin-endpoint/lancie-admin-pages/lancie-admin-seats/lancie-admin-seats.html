@@ -134,6 +134,7 @@
     <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
     <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
     <lancie-ajax id="ajaxAddSeatRow" method="POST" body="[[getSeatGroupDTOBody(seatGroup,seatAmount)]]" on-lancie-ajax="onAddSeatRow" refurl = "seats"></lancie-ajax>
+    <lancie-ajax id="ajaxRemoveSeats" method="DELETE" body="[[getSeatGroupDTOBody(removeGroup,removeAmount)]]" on-lancie-ajax="onRemoveSeats" refurl = "seats"></lancie-ajax>
 
     <paper-input label="Search user" value="{{filterUser}}"></paper-input>
     <div class="seatmapwrapper">
@@ -151,6 +152,7 @@
           </template>
           <div class="seatmap-row">
             <div class="add-seat" on-tap="openAddSeatRowDialog">+</div>
+            <div class="add-seat" style="margin-top: 10px;" on-tap="openSeatRemoveDialog">-</div>
           </div>
         </div>
       </div>
@@ -187,6 +189,29 @@
           <paper-button on-tap="addSeatRow">Add seats</paper-button>
           <paper-button dialog-dismiss>Close</paper-button>
         </div>
+    </lancie-dialog>
+
+    <lancie-dialog id=seatRemoveDialog>
+      <h2>Remove seats from a row</h2>
+      <div class="dialog-content">
+        <lancie-error id="removeError"></lancie-error>
+        <paper-input label="Group Name" value="{{removeGroup}}"></paper-input>
+        <paper-input label="Amount of seats" value={{removeAmount}}></paper-input>
+        <paper-button on-tap="openSeatRemoveConfirmDialog">Remove seats</paper-button>
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </lancie-dialog>
+
+    <lancie-dialog id="seatRemoveDialogConfirm">
+      <h2>Confirm deletion</h2>
+      <div class="dialog-content">
+        <h4>Are you certain you want to delete [[removeAmount]] seat(s) from the following row?</h4>
+        <p>[[removeGroup]]</p>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="removeSeats" class="confirm-delete-button">Remove</paper-button>
+      </div>
     </lancie-dialog>
   </template>
   <script>
@@ -282,6 +307,31 @@
 
           onAddSeatRow(e, request) {
             this.$.seatRowDialog.close();
+            this.$.ajaxGetAllSeats.generateRequest();
+          }
+
+          openSeatRemoveDialog() {
+            this.$.removeError.clear();
+            this.removeGroup = this.seatGroups[this.seatGroups.length-1];
+            this.$.seatRemoveDialog.open();
+          }
+
+          openSeatRemoveConfirmDialog() {
+            this.$.removeError.clear();
+            if (!this.seatGroups.includes(this.removeGroup)) {
+              this.$.removeError.setError("That Seat Group does not exist, choose a different one!");
+              return;
+            }
+            this.$.seatRemoveDialogConfirm.open();
+          }
+
+          removeSeats() {
+            this.$.seatRemoveDialogConfirm.close();
+            this.$.ajaxRemoveSeats.generateRequest();
+          }
+
+          onRemoveSeats(e, request) {
+            this.$.seatRemoveDialog.close();
             this.$.ajaxGetAllSeats.generateRequest();
           }
 
