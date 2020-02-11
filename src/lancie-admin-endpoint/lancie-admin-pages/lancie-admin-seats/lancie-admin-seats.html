@@ -133,6 +133,7 @@
     <lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
     <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
     <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
+    <lancie-ajax id="ajaxAddSeatRow" method="POST" body="[[getSeatGroupDTOBody(seatGroup)]]" on-lancie-ajax="onAddSeatRow" refurl = "seats"></lancie-ajax>
 
     <paper-input label="Search user" value="{{filterUser}}"></paper-input>
     <div class="seatmapwrapper">
@@ -149,28 +150,42 @@
             </div>
           </template>
           <div class="seatmap-row">
-          <div class="add-seat">+ </div>
-          </div>
-        </div>
-        <div class="non-seat-group">
-          <div class="lounge">
-            <div>Lounge</div>
-          </div>
-          <div class="stage">
-            <div>Stage</div>
-          </div>
-          <div class="entrance">
-            <div>Entrance</div>
-            <div>
-              <iron-icon icon="lancie:arrow-downward"></iron-icon>
-            </div>
+            <div class="add-seat" on-tap="openAddSeatRowDialog">+</div>
           </div>
         </div>
       </div>
     </div>
 
-    <lancie-dialog id=seatDialog>
+    <lancie-dialog id="seatDialog">
+      <h2>Seat reservation</h2>
+      <div class="dialog-content">
+        <lancie-error id="error"></lancie-error>
+        <div hidden$="[[!_checkExists(tickets)]]">
+          <p>Select the user to reserve this seat for:</p>
+          <paper-listbox id="listbox">
+            <template is="dom-repeat" items="[[tickets]]">
+                <paper-item data-ticket$="[[item.id]]" class="team-member">[[item.owner.profile.displayName]]</paper-item>
+              </template>
+          </paper-listbox>
+        </div>
+        <div hidden$="[[_checkExists(tickets)]]">
+          <p>You need at least one ticket to reserve a seat!</p>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Close</paper-button>
+        <paper-button on-tap="reserveSeat" hidden$="[[!_checkExists(tickets)]]">Reserve seat</paper-button>
+      </div>
+    </lancie-dialog>
 
+    <lancie-dialog id=seatRowDialog>
+        <h2>Add a row of seats</h2>
+        <div class="dialog-content">
+          <lancie-error id="error2"></lancie-error>
+          <paper-input label="amount of seats" value={{seatAmount}}></paper-input>
+          <paper-button on-tap="addSeatRow">Add seats</paper-button>
+          <paper-button dialog-dismiss>Close</paper-button>
+        </div>
     </lancie-dialog>
   </template>
   <script>
@@ -242,6 +257,33 @@
               return;
             }
             this.set('tickets', request.response);
+          }
+
+          openAddSeatRowDialog() {
+            this.$.error.clear();
+            this.$.seatRowDialog.open();
+          }
+
+          addSeatRow() {
+            this.$.error2.clear();
+            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
+            const nextGroupName = String.fromCharCode(lastGroupName.charCodeAt() + 1);
+            console.log("DEZR",nextGroupName);
+            this.seatGroup = {
+              "seatGroupName": nextGroupName,
+              "numberOfSeats": parseInt(this.seatAmount)
+            }
+            this.$.ajaxAddSeatRow.generateRequest();
+          }
+
+          getSeatGroupDTOBody(seatGroup) {
+            console.log(seatGroup);
+            return seatGroup;
+          }
+
+          onAddSeatRow(e, request) {
+            console.log("IT WORKED! MY TIME MACHINE WO-");
+            console.log("i am a stegosaurus");
           }
 
           reserveSeat() {
