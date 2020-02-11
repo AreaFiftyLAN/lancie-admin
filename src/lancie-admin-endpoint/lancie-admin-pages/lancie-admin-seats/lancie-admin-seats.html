@@ -133,7 +133,7 @@
     <lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
     <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
     <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
-    <lancie-ajax id="ajaxAddSeatRow" method="POST" body="[[getSeatGroupDTOBody(seatGroup)]]" on-lancie-ajax="onAddSeatRow" refurl = "seats"></lancie-ajax>
+    <lancie-ajax id="ajaxAddSeatRow" method="POST" body="[[getSeatGroupDTOBody(seatGroup,seatAmount)]]" on-lancie-ajax="onAddSeatRow" refurl = "seats"></lancie-ajax>
 
     <paper-input label="Search user" value="{{filterUser}}"></paper-input>
     <div class="seatmapwrapper">
@@ -182,7 +182,8 @@
         <h2>Add a row of seats</h2>
         <div class="dialog-content">
           <lancie-error id="error2"></lancie-error>
-          <paper-input label="amount of seats" value={{seatAmount}}></paper-input>
+          <paper-input label="Group Name" value="{{seatGroup}}"></paper-input>
+          <paper-input label="Amount of seats" value="{{seatAmount}}"></paper-input>
           <paper-button on-tap="addSeatRow">Add seats</paper-button>
           <paper-button dialog-dismiss>Close</paper-button>
         </div>
@@ -212,7 +213,8 @@
               type: Boolean,
               notify: true
             },
-            seatGroups: Array
+            seatGroups: Array,
+            seatGroup: Object
           };
         }
 
@@ -261,29 +263,26 @@
 
           openAddSeatRowDialog() {
             this.$.error.clear();
+            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
+            this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
             this.$.seatRowDialog.open();
           }
 
           addSeatRow() {
             this.$.error2.clear();
-            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
-            const nextGroupName = String.fromCharCode(lastGroupName.charCodeAt() + 1);
-            console.log("DEZR",nextGroupName);
-            this.seatGroup = {
-              "seatGroupName": nextGroupName,
-              "numberOfSeats": parseInt(this.seatAmount)
-            }
             this.$.ajaxAddSeatRow.generateRequest();
           }
 
-          getSeatGroupDTOBody(seatGroup) {
-            console.log(seatGroup);
-            return seatGroup;
+          getSeatGroupDTOBody(groupName, seatAmount) {
+            return {
+              "seatGroupName": groupName,
+              "numberOfSeats": parseInt(seatAmount)
+            };
           }
 
           onAddSeatRow(e, request) {
-            console.log("IT WORKED! MY TIME MACHINE WO-");
-            console.log("i am a stegosaurus");
+            this.$.seatRowDialog.close();
+            this.$.ajaxGetAllSeats.generateRequest();
           }
 
           reserveSeat() {
