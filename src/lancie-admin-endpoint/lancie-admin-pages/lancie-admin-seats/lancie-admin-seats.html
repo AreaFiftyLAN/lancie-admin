@@ -135,6 +135,8 @@
     <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
     <lancie-ajax id="ajaxAddSeatRow" method="POST" body="[[getSeatGroupDTOBody(seatGroup,seatAmount)]]" on-lancie-ajax="onAddSeatRow" refurl = "seats"></lancie-ajax>
     <lancie-ajax id="ajaxRemoveSeats" method="DELETE" body="[[getSeatGroupDTOBody(removeGroup,removeAmount)]]" on-lancie-ajax="onRemoveSeats" refurl = "seats"></lancie-ajax>
+    <lancie-ajax id="ajaxLockSeat" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockSeat"></lancie-ajax>
+    <lancie-ajax id="ajaxLockGroup" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockGroup"></lancie-ajax>
 
     <paper-input label="Search user" value="{{filterUser}}"></paper-input>
     <div class="seatmapwrapper">
@@ -142,7 +144,7 @@
         <div class="seats">
           <template is="dom-repeat" items='[[seatGroups]]'>
             <div class="seatmap-row">
-              <div class="grouplabel">[[item]]</div>
+              <div class="grouplabel" on-tap="openLockGroupDialog" data-item$="[[item]]">[[item]]</div>
               <div class="seats-group">
                 <template is="dom-repeat" items="[[_getSeatGroup(seats, item)]]">
                   <lancie-admin-seat tickets="[[tickets]]" filter="[[filterUser]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-admin-seat>
@@ -172,7 +174,7 @@
         </div>
       </div>
       <div class="dialog-actions">
-        <paper-button on-tap="lockSeat">Lock seat</paper-button>
+        <paper-button on-tap="lockSeat">Toggle lock</paper-button>
         <paper-button dialog-dismiss>Close</paper-button>
       </div>
     </lancie-dialog>
@@ -187,6 +189,17 @@
           <paper-button dialog-dismiss>Close</paper-button>
         </div>
     </lancie-dialog>
+
+    <lancie-dialog id=lockGroupDialog>
+      <h2>Lock/unlock Group</h2>
+      <div class="dialog-content">
+        <h4>Changing lock status of following group:</h4>
+        <p>[[groupToLock]]</p>
+        <paper-button on-tap="lockGroup">Lock seats</paper-button>
+        <paper-button on-tap="unlockGroup">Unlock seats</paper-button>
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+  </lancie-dialog>
 
     <lancie-dialog id=seatRemoveDialog>
       <h2>Remove seats from a row</h2>
@@ -328,13 +341,48 @@
             this.$.ajaxRemoveSeats.generateRequest();
           }
 
-          lockSeat() {
-            console.log("Locking seat")
-          }
-
           onRemoveSeats(e, request) {
             this.$.seatRemoveDialog.close();
             this.$.ajaxGetAllSeats.generateRequest();
+          }
+
+          lockSeat() {
+            console.log("Locking seat")
+            this.lockBoolean = !this.seatToEdit.locked;
+            console.log(this.lockBoolean)
+            const seat = this.seatToEdit;
+            this.$.ajaxLockSeat.refurl = `seats/lock/${seat.seatGroup}/${seat.seatNumber}`;
+            this.$.ajaxLockSeat.generateRequest();
+          }
+
+          onLockSeat(e, request) {
+            console.log("Seat lock changed")
+            this.$.ajaxGetAllSeats.generateRequest();
+            this.$.seatDialog.close();
+          }
+
+          openLockGroupDialog(event) {
+            console.log(event.target.dataset.item)
+            this.groupToLock = event.target.dataset.item;
+            this.$.lockGroupDialog.open();
+          }
+
+          lockGroup() {
+            this.lockBoolean = true;
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`
+            this.$.ajaxLockGroup.generateRequest();
+          }
+
+          unlockGroup() {
+            this.lockBoolean = false;
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`
+            this.$.ajaxLockGroup.generateRequest();
+          }
+
+          onLockGroup(e, request) {
+            console.log("Seatgroup lock changed")
+            this.$.ajaxGetAllSeats.generateRequest();
+            this.$.lockGroupDialog.close();
           }
 
           reserveSeat() {
