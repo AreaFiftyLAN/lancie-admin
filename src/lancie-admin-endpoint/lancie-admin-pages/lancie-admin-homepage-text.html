@@ -149,21 +149,15 @@
         }
 
         let curr = new Date(this.banners[0].endDate);
-        console.log("eerste cur", curr);
         curr.setDate(curr.getDate() + 1);
-        console.log("tweede", curr);
         for (let i = 0; i < this.banners.length; i++) {
-          console.log("i=",i);
-          console.log("valueof", curr.valueOf());
           if (curr.valueOf() === new Date(this.banners[i].startDate).valueOf()) {
             curr = new Date(this.banners[i].endDate);
             curr.setDate(curr.getDate() + 1);
           }
           else {
-            console.log(curr);
             curr = new Date(this.banners[i].endDate);
             curr.setDate(curr.getDate() + 1);
-            console.log("3", curr);
             
             if (i === this.banners.length - 1) {
               let date = curr.toISOString().substr(0, 10);
