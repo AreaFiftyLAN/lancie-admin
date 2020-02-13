@@ -1,4 +1,3 @@
-<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
 
 <link rel="import" href="../../lancie-admin-page-layout.html">
@@ -347,40 +346,35 @@
           }
 
           lockSeat() {
-            console.log("Locking seat")
             this.lockBoolean = !this.seatToEdit.locked;
-            console.log(this.lockBoolean)
             const seat = this.seatToEdit;
             this.$.ajaxLockSeat.refurl = `seats/lock/${seat.seatGroup}/${seat.seatNumber}`;
             this.$.ajaxLockSeat.generateRequest();
           }
 
           onLockSeat(e, request) {
-            console.log("Seat lock changed")
             this.$.ajaxGetAllSeats.generateRequest();
             this.$.seatDialog.close();
           }
 
           openLockGroupDialog(event) {
-            console.log(event.target.dataset.item)
             this.groupToLock = event.target.dataset.item;
             this.$.lockGroupDialog.open();
           }
 
           lockGroup() {
             this.lockBoolean = true;
-            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`;
             this.$.ajaxLockGroup.generateRequest();
           }
 
           unlockGroup() {
             this.lockBoolean = false;
-            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`;
             this.$.ajaxLockGroup.generateRequest();
           }
 
           onLockGroup(e, request) {
-            console.log("Seatgroup lock changed")
             this.$.ajaxGetAllSeats.generateRequest();
             this.$.lockGroupDialog.close();
           }
@@ -413,7 +407,6 @@
 
           openSeatEditDialog(event) {
             this.seatToEdit = event.detail.seatToEdit;
-            console.log(this.seatToEdit)
             this.$.error.clear();
             this.$.seatDialog.open();
           }
