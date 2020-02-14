@@ -10,6 +10,12 @@ First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polyme
 Secondly, openssl uses a few files to increase randomness. These files must be present on the system. `touch /var/log/mail && touch /var/log/messages
 ` will allow you to start run the next commands.
 
+Last, add yarn and dependencies:
+```
+yarn
+yarn global add bower
+```
+
 ## Viewing Your Application
 
 If you are trying to run the application for the first time, first run:
