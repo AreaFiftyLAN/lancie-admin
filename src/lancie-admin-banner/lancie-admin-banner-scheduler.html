@@ -77,7 +77,12 @@ the banner within that timeframe-->
 
       static get properties() {
         return {
-          banner: Object,
+          banner: {
+            type: Object,
+            value: () => {
+              return {};
+            },
+          },
           today: {
             type: Date,
             value: () => {
