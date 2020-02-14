@@ -1,0 +1,432 @@
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../../lancie-admin-page-layout.html">
+<link rel="import" href="../../../lancie-admin-table/lancie-admin-table.html">
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="lancie-admin-seat.html">
+<link rel="import" href="../../../../src/lancie-admin-icons.html">
+
+<dom-module id="lancie-admin-seats">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 32px;
+      }
+
+      @media(max-width: 600px) {
+        :host {
+          padding: 8px;
+        }
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .seatmap-row {
+        padding: 16px;
+      }
+
+      .seatmap-row .seats-group {
+        width: 100px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .add-seat {
+        text-align: center;
+        width: 100px;
+        color: var(--secondary-color);
+        font-size: 32px;
+        font-weight: bold;
+        background: var(--primary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12),
+          0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .remove-seat {
+        text-align: center;
+        width: 100px;
+        color: var(--secondary-color);
+        margin-top: 10px;
+        font-size: 32px;
+        font-weight: bold;
+        background: var(--primary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12),
+          0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .seatmap {
+        overflow: auto;
+      }
+
+      .seatmap-wrapper {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .grouplabel {
+        text-align: center;
+        width: 100%;
+        color: var(--secondary-color);
+        font-size: 32px;
+        font-weight: bold;
+        background: var(--primary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12),
+          0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .non-seat-group {
+        min-width: 810px;
+        margin-top: 60px;
+        display: flex;
+      }
+
+      .non-seat-group>div {
+        background-color: var(--paper-grey-500);
+        display: inline-block;
+        text-align: center;
+      }
+
+      .non-seat-group>div>div {
+        position: relative;
+        color: #fff;
+        width: 100%;
+        top: calc(50% - 0.75em);
+      }
+
+      .non-seat-group iron-icon {
+        --iron-icon-height: 56px;
+        --iron-icon-width: 56px;
+      }
+
+      .lounge {
+        width: 300px;
+        height: 450px;
+      }
+
+      .stage {
+        width: 315px;
+        height: 180px;
+        margin-top: 270px;
+      }
+
+      .entrance {
+        width: 195px;
+        height: 330px;
+        margin-top: 120px;
+      }
+
+      #listbox {
+        overflow-y: auto;
+        max-height: 40vh;
+      }
+
+      .seats {
+        display: flex;
+      }
+
+      .team-member {
+        cursor: pointer;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
+    <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
+    <lancie-ajax id="ajaxRemoveSeats" method="DELETE" body="[[getSeatGroupDTOBody(removeGroup,removeAmount)]]" on-lancie-ajax="onRemoveSeats" refurl="seats"></lancie-ajax>
+    <lancie-ajax id="ajaxLockSeat" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockSeat"></lancie-ajax>
+    <lancie-ajax id="ajaxLockGroup" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockGroup"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="seats">
+      <p>Here you can manage the seatmap.</p>
+      <p>Click the + and - to add or remove seats.</p>
+      <p>Click on a seat to lock/unlock it.</p>
+      <p>Click on a seatgroup name to lock/unlock the entire row.</p>
+      <div class="seatmap-wrapper">
+        <div class="seatmap">
+          <div class="seats">
+            <template is="dom-repeat" items='[[seatGroups]]'>
+              <div class="seatmap-row">
+                <div class="grouplabel" on-tap="openLockGroupDialog" data-item$="[[item]]">[[item]]</div>
+                <div class="seats-group">
+                  <template is="dom-repeat" items="[[_getSeatGroup(seats, item)]]">
+                    <lancie-admin-seat tickets="[[tickets]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-admin-seat>
+                  </template>
+                </div>
+              </div>
+            </template>
+            <div class="seatmap-row">
+              <div class="add-seat" on-tap="openAddSeatRowDialog">+</div>
+              <div class="remove-seat" on-tap="openSeatRemoveDialog">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <lancie-dialog id="seatDialog">
+        <h2>Edit seat</h2>
+        <div class="dialog-content">
+          <lancie-error id="editSeatError"></lancie-error>
+          <div hidden$="[[_checkSeatTaken(seatToEdit)]]">
+            <h4>Seat currently taken by:</h4>
+            <p>[[seatToEdit.ticket.owner.profile.displayName]]</p>
+            
+          </div>
+          <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
+            <p>Seat is still available</p>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <paper-button on-tap="lockSeat">Toggle lock</paper-button>
+          <paper-button dialog-dismiss>Close</paper-button>
+        </div>
+      </lancie-dialog>
+
+      <lancie-dialog id="seatRowDialog">
+          <h2>Add a row of seats</h2>
+          <div class="dialog-content">
+            <lancie-form id="addSeatRowForm" on-response="onAddSeatRow" method="POST" refurl="seats">
+              <paper-input label="Group Name" name="seatGroupName" value="{{seatGroup}}" error-message="This field is required!" auto-validate required></paper-input>
+              <paper-input label="Amount of seats" name="numberOfSeats" value="{{seatAmount}}" error-message="This field is required!" auto-validate required></paper-input>
+            </lancie-form>
+          </div>
+          <div class="dialog-actions">
+            <paper-button on-tap="addSeatRow">Add seats</paper-button>
+            <paper-button dialog-dismiss>Close</paper-button>
+          </div>
+      </lancie-dialog>
+
+      <lancie-dialog id="lockGroupDialog">
+        <h2>Lock/unlock Group</h2>
+        <div class="dialog-content">
+          <h4>Changing lock status of following group:</h4>
+          <p>[[groupToLock]]</p>
+        </div>
+        <div class="dialog-actions">
+          <paper-button on-tap="lockGroup">Lock seats</paper-button>
+          <paper-button on-tap="unlockGroup">Unlock seats</paper-button>
+          <paper-button dialog-dismiss>Close</paper-button>
+        </div>
+      </lancie-dialog>
+
+      <lancie-dialog id=seatRemoveDialog>
+        <h2>Remove seats from a row</h2>
+        <div class="dialog-content">
+          <lancie-error id="removeError"></lancie-error>
+          <paper-input label="Group Name" value="{{removeGroup}}"></paper-input>
+          <paper-input label="Amount of seats" value={{removeAmount}}></paper-input>
+        </div>
+        <div class="dialog-actions">
+          <paper-button on-tap="openSeatRemoveConfirmDialog">Remove seats</paper-button>
+          <paper-button dialog-dismiss>Close</paper-button>
+        </div>
+      </lancie-dialog>
+
+      <lancie-dialog id="seatRemoveDialogConfirm">
+        <h2>Confirm deletion</h2>
+        <div class="dialog-content">
+          <h4>Are you certain you want to delete [[removeAmount]] seat(s) from the following row?</h4>
+          <p>[[removeGroup]]</p>
+        </div>
+        <div class="dialog-actions">
+          <paper-button on-tap="removeSeats" class="confirm-delete-button">Remove</paper-button>
+          <paper-button dialog-dismiss>Cancel</paper-button>
+        </div>
+      </lancie-dialog>
+    </lancie-admin-page-layout>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+      class LancieAdminSeats extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-seats';
+        }
+
+        static get properties() {
+          return {
+            user: Object,
+            seats: {
+              type: Array,
+              value: () => [],
+            },
+            tickets: {
+              type: Array,
+              value: () => [],
+            },
+            fixed: {
+              type: Boolean,
+              notify: true
+            },
+            seatGroups: Array,
+            seatGroup: String,
+            seatToEdit: Object
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.addEventListener('request-seat-edit', (e) => this.openSeatEditDialog(e));
+        }
+
+          refreshSeats() {
+            this.dispatchEvent(new CustomEvent('toast', {
+              detail: { text: 'Seat reservation succeeded!', duration: 3000 },
+              bubbles: true,
+              composed: true
+            }));
+            this.$.ajaxGetAllSeats.generateRequest();
+          }
+
+          onGetAllSeats(e, request) {
+            if (!request.succeeded) {
+              this.dispatchEvent(new CustomEvent('toast', {
+                detail: { text: 'Something went wrong, please refresh the page!', duration: 8000 },
+                bubbles: true,
+                composed: true
+              }));
+              return;
+            }
+            const seatMap = request.response.seatmap;
+            const groups = Object.keys(seatMap);
+            this.set('seatGroups', groups);
+
+            let seats = groups.map(x => seatMap[x]);
+            for (let group of seats) {
+              group.sort((a, b) => a.seatNumber - b.seatNumber);
+            }
+
+            this.seats = seats;
+          }
+
+          onGetTeamTickets(e, request) {
+            if (!request.succeeded) {
+              this.dispatchEvent(new CustomEvent('refreshToast', { bubbles: true, composed: true }));
+              return;
+            }
+            this.set('tickets', request.response);
+          }
+
+          openAddSeatRowDialog() {
+            this.$.editSeatError.clear();
+            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
+            this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
+            this.$.seatRowDialog.open();
+          }
+
+          addSeatRow() {
+            const seatGroup = this.seatGroup;
+            this.seatGroup = seatGroup.toUpperCase();
+            if (this.$.addSeatRowForm.validateAndSubmit()) {
+              this.$.addSeatRowForm.reset();
+            }
+          }
+
+          onAddSeatRow(e, request) {
+            this.$.seatRowDialog.close();
+            this.$.ajaxGetAllSeats.generateRequest();
+          }
+
+          openSeatRemoveDialog() {
+            this.$.removeError.clear();
+            this.removeGroup = this.seatGroups[this.seatGroups.length-1];
+            this.$.seatRemoveDialog.open();
+          }
+
+          openSeatRemoveConfirmDialog() {
+            this.$.removeError.clear();
+            const removeGroup = this.removeGroup;
+            this.removeGroup = removeGroup.toUpperCase();
+            if (!this.seatGroups.includes(this.removeGroup)) {
+              this.$.removeError.setError("That Seat Group does not exist, choose a different one!");
+              return;
+            }
+            this.$.seatRemoveDialogConfirm.open();
+          }
+
+          removeSeats() {
+            this.$.seatRemoveDialogConfirm.close();
+            this.$.ajaxRemoveSeats.generateRequest();
+          }
+
+          onRemoveSeats(e, request) {
+            this.$.seatRemoveDialog.close();
+            this.$.ajaxGetAllSeats.generateRequest();
+          }
+
+          lockSeat() {
+            this.lockBoolean = !this.seatToEdit.locked;
+            const seat = this.seatToEdit;
+            this.$.ajaxLockSeat.refurl = `seats/lock/${seat.seatGroup}/${seat.seatNumber}`;
+            this.$.ajaxLockSeat.generateRequest();
+          }
+
+          onLockSeat(e, request) {
+            this.$.ajaxGetAllSeats.generateRequest();
+            this.$.seatDialog.close();
+          }
+
+          openLockGroupDialog(event) {
+            this.groupToLock = event.target.dataset.item;
+            this.$.lockGroupDialog.open();
+          }
+
+          lockGroup() {
+            this.lockBoolean = true;
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`;
+            this.$.ajaxLockGroup.generateRequest();
+          }
+
+          unlockGroup() {
+            this.lockBoolean = false;
+            this.$.ajaxLockGroup.refurl = `seats/lock/${this.groupToLock}`;
+            this.$.ajaxLockGroup.generateRequest();
+          }
+
+          onLockGroup(e, request) {
+            this.$.ajaxGetAllSeats.generateRequest();
+            this.$.lockGroupDialog.close();
+          }
+
+          openSeatEditDialog(event) {
+            this.seatToEdit = event.detail.seatToEdit;
+            this.$.editSeatError.clear();
+            this.$.seatDialog.open();
+          }
+
+          getSeatGroupDTOBody(groupName, seatAmount) {
+            return {
+              "seatGroupName": groupName,
+              "numberOfSeats": parseInt(seatAmount)
+            };
+          }
+
+          _getSeatGroup(seats, group) {
+            return seats[this.seatGroups.indexOf(group)];
+          }
+
+          _checkExists(tickets) {
+            return tickets.filter(ticket => ticket.valid === true).length > 0;
+          }
+
+          _checkSeatTaken(seat) {
+            return seat.ticket === null;
+          }
+      }
+
+      customElements.define(LancieAdminSeats.is, LancieAdminSeats);
+    })();
+  </script>
+</dom-module>
