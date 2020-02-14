@@ -321,11 +321,16 @@
 
           openAddSeatRowDialog() {
             this.$.editSeatError.clear();
+<<<<<<< HEAD
             this.seatGroup = "A";
             if (this.seatGroups.length > 1 ) {
               const lastGroupName = this.seatGroups[this.seatGroups.length-1];
               this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
             }
+=======
+            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
+            this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
+>>>>>>> master
             this.$.seatRowDialog.open();
           }
 
