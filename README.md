@@ -3,9 +3,18 @@
 
 Admin panel for the LANcie API
 
-## Install the Polymer-CLI
+## Install Dependencies
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
+
+Secondly, openssl uses a few files to increase randomness. These files must be present on the system. `touch /var/log/mail && touch /var/log/messages
+` will allow you to run the next commands.
+
+Last, add yarn and dependencies:
+```
+yarn
+yarn global add bower
+```
 
 ## Viewing Your Application
 
@@ -18,9 +27,8 @@ $ bower install
 After that you can use the following command to run the application locally:
 
 ```
-$ polymer serve
+$ yarn serve
 ```
-
 
 ## Building Your Application
 
