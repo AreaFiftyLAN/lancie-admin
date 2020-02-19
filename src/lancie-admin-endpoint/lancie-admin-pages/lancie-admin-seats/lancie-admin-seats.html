@@ -148,6 +148,7 @@
     <lancie-ajax id="ajaxRemoveSeats" method="DELETE" body="[[getSeatGroupDTOBody(removeGroup,removeAmount)]]" on-lancie-ajax="onRemoveSeats" refurl="seats"></lancie-ajax>
     <lancie-ajax id="ajaxLockSeat" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockSeat"></lancie-ajax>
     <lancie-ajax id="ajaxLockGroup" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockGroup"></lancie-ajax>
+    <lancie-ajax id="ajaxAssignSeat" method="POST" on-lancie-ajax="onAssignSeat"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="seats">
       <p>Here you can manage the seatmap.</p>
@@ -182,14 +183,19 @@
           <div hidden$="[[_checkSeatTaken(seatToEdit)]]">
             <h4>Seat currently taken by:</h4>
             <p>[[seatToEdit.ticket.owner.profile.displayName]]</p>
-            
           </div>
           <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
             <p>Seat is still available</p>
+            <p>Want to assign a user to a seat?</p>
+            <p>input the ticket ID below</p>
+            <paper-input label="ticket id" value="{{assignId}}"></paper-input>
           </div>
         </div>
         <div class="dialog-actions">
           <paper-button on-tap="lockSeat">Toggle lock</paper-button>
+          <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
+            <paper-button on-tap="assignSeat">assign seat</paper-button>
+          </div>
           <paper-button dialog-dismiss>Close</paper-button>
         </div>
       </lancie-dialog>
@@ -321,8 +327,11 @@
 
           openAddSeatRowDialog() {
             this.$.editSeatError.clear();
-            const lastGroupName = this.seatGroups[this.seatGroups.length-1];
-            this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
+            this.seatGroup = "A";
+            if (this.seatGroups.length > 0 ) {
+              const lastGroupName = this.seatGroups[this.seatGroups.length-1];
+              this.seatGroup = String.fromCharCode(lastGroupName.charCodeAt() + 1);
+            }
             this.$.seatRowDialog.open();
           }
 
@@ -404,6 +413,17 @@
             this.seatToEdit = event.detail.seatToEdit;
             this.$.editSeatError.clear();
             this.$.seatDialog.open();
+          }
+
+          assignSeat() {
+            const seat = this.seatToEdit;
+            const assignId = this.assignId;
+            this.$.ajaxAssignSeat.refurl = `/seats/${seat.seatGroup}/${seat.seatNumber}/${assignId}`;
+            this.$.ajaxAssignSeat.generateRequest();
+          }
+
+          onAssignSeat(e, request) {
+            this.$.seatDialog.close();
           }
 
           getSeatGroupDTOBody(groupName, seatAmount) {
