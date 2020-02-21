@@ -46,6 +46,7 @@
 
     <lancie-admin-page-layout endpoint="Assign RFID">
       <p>Check in a user by scanning the RFID tag and selecting the user from the list below.</p>
+      <p>Check if the persons birthday is correct, they can't change it after they are checked in.</p>
       <paper-button on-tap="_registerUser">Check in</paper-button>
       <lancie-error id="error"></lancie-error>
       <paper-input id="rfid" label="RFID" value="{{rfid}}" on-keyDown="_focusUser" autofocus></paper-input>
@@ -54,7 +55,7 @@
       <paper-listbox selected="{{ticketId}}" attr-for-selected="ticket-id">
         <template is="dom-repeat" items="[[_filter(tickets, filterString)]]">
           <paper-item ticket-id="[[item.id]]">
-            [[item.owner.profile.firstName]] [[item.owner.profile.lastName]]
+            [[item.owner.profile.firstName]] [[item.owner.profile.lastName]] ([[getDateFormatted(item.owner.profile.birthday)]])
           </paper-item>
         </template>
       </paper-listbox>
@@ -131,6 +132,12 @@
             this.$.error.setError('Unable to assign user to RFID.');
           }
           this.displayColor = true;
+        },
+
+        getDateFormatted:function(date) {
+          const d = new Date(date);
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+          return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         },
 
         _filter: function(data, filterString) {
