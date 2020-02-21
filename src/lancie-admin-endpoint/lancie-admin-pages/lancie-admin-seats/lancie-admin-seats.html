@@ -188,7 +188,7 @@
             <p>Seat is still available</p>
             <p>Want to assign a user to a seat?</p>
             <p>input the ticket ID below</p>
-            <paper-input label="ticket id" value="{{assignId}}"></paper-input>
+            <paper-input label="ticket id" value="{{ticketID}}"></paper-input>
           </div>
         </div>
         <div class="dialog-actions">
@@ -417,8 +417,8 @@
 
           assignSeat() {
             const seat = this.seatToEdit;
-            const assignId = this.assignId;
-            this.$.ajaxAssignSeat.refurl = `/seats/${seat.seatGroup}/${seat.seatNumber}/${assignId}`;
+            const ticketID = this.ticketID;
+            this.$.ajaxAssignSeat.refurl = `/seats/${seat.seatGroup}/${seat.seatNumber}/${ticketID}`;
             this.$.ajaxAssignSeat.generateRequest();
           }
 
