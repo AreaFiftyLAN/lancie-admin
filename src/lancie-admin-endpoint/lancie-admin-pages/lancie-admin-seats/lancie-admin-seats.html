@@ -143,11 +143,13 @@
     </style>
 
     <lancie-ajax auto-fire id="ajaxGetAllSeats" refurl="seats" on-lancie-ajax="onGetAllSeats"></lancie-ajax>
+    <lancie-ajax auto-fire id="ajaxGetAllTickets" method="GET" refurl="tickets" on-lancie-ajax="onGetAllTickets"></lancie-ajax>
     <lancie-ajax auto-fire id="ajaxGetTeamTickets" refurl="tickets/teammembers" on-lancie-ajax="onGetTeamTickets"></lancie-ajax>
     <lancie-ajax id="ajaxReserveSeat" method="POST" on-lancie-ajax="onReserveSeat"></lancie-ajax>
     <lancie-ajax id="ajaxRemoveSeats" method="DELETE" body="[[getSeatGroupDTOBody(removeGroup,removeAmount)]]" on-lancie-ajax="onRemoveSeats" refurl="seats"></lancie-ajax>
     <lancie-ajax id="ajaxLockSeat" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockSeat"></lancie-ajax>
     <lancie-ajax id="ajaxLockGroup" method="POST" body="[[lockBoolean]]" on-lancie-ajax="onLockGroup"></lancie-ajax>
+    <lancie-ajax id="ajaxAssignSeat" method="POST" on-lancie-ajax="onAssignSeat"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="seats">
       <p>Here you can manage the seatmap.</p>
@@ -162,7 +164,7 @@
                 <div class="grouplabel" on-tap="openLockGroupDialog" data-item$="[[item]]">[[item]]</div>
                 <div class="seats-group">
                   <template is="dom-repeat" items="[[_getSeatGroup(seats, item)]]">
-                    <lancie-admin-seat tickets="[[tickets]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-admin-seat>
+                    <lancie-admin-seat tickets="[[teamTickets]]" seat="[[item]]" user="[[user]]" fixed="[[fixed]]"></lancie-admin-seat>
                   </template>
                 </div>
               </div>
@@ -182,14 +184,19 @@
           <div hidden$="[[_checkSeatTaken(seatToEdit)]]">
             <h4>Seat currently taken by:</h4>
             <p>[[seatToEdit.ticket.owner.profile.displayName]]</p>
-            
           </div>
           <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
             <p>Seat is still available</p>
+            <p>Want to assign a user to a seat?</p>
+            <p>input the ticket ID below</p>
+            <paper-input type="number" label="ticket id" value="{{ticketID}}"></paper-input>
           </div>
         </div>
         <div class="dialog-actions">
           <paper-button on-tap="lockSeat">Toggle lock</paper-button>
+          <div hidden$="[[!_checkSeatTaken(seatToEdit)]]">
+            <paper-button on-tap="assignSeat">assign seat</paper-button>
+          </div>
           <paper-button dialog-dismiss>Close</paper-button>
         </div>
       </lancie-dialog>
@@ -262,6 +269,10 @@
               type: Array,
               value: () => [],
             },
+            teamTickets: {
+              type: Array,
+              value: () => [],
+            },
             tickets: {
               type: Array,
               value: () => [],
@@ -311,12 +322,20 @@
             this.seats = seats;
           }
 
-          onGetTeamTickets(e, request) {
+          onGetAllTickets(e, request) {
             if (!request.succeeded) {
               this.dispatchEvent(new CustomEvent('refreshToast', { bubbles: true, composed: true }));
               return;
             }
             this.set('tickets', request.response);
+          }
+
+          onGetTeamTickets(e, request) {
+            if (!request.succeeded) {
+              this.dispatchEvent(new CustomEvent('refreshToast', { bubbles: true, composed: true }));
+              return;
+            }
+            this.set('teamTickets', request.response);
           }
 
           openAddSeatRowDialog() {
@@ -407,6 +426,28 @@
             this.seatToEdit = event.detail.seatToEdit;
             this.$.editSeatError.clear();
             this.$.seatDialog.open();
+          }
+
+          assignSeat() {
+            this.$.editSeatError.clear();
+            const seat = this.seatToEdit;
+            const ticketID = parseInt(this.ticketID);
+            if (!this.tickets.filter(ticket => ticket.id === ticketID).length > 0) {
+              this.$.editSeatError.setError("That ticket does not exist, choose a different one!");
+              return;
+            }
+            this.$.ajaxAssignSeat.refurl = `/seats/${seat.seatGroup}/${seat.seatNumber}/${ticketID}`;
+            this.$.ajaxAssignSeat.generateRequest();
+          }
+
+          onAssignSeat(e, request) {
+            if (!request.succeeded) {
+              this.$.editSeatError.setError("Could not ASSIGN SEAT. Please refresh and try again.");
+              return;
+            } 
+            this.$.ajaxGetAllSeats.generateRequest();
+            this.$.seatDialog.close();
+            this.ticketID = '';
           }
 
           getSeatGroupDTOBody(groupName, seatAmount) {
