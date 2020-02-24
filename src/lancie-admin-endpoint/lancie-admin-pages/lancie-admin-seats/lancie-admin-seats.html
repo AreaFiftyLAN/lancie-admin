@@ -436,7 +436,7 @@
               this.$.editSeatError.setError("That ticket does not exist, choose a different one!");
               return;
             }
-            this.$.ajaxAssignSeat.refurl = `/seats/${seat.seatGroup}/${seat.seatNumber}/${ticketID}`;
+            this.$.ajaxAssignSeat.refurl = `seats/${seat.seatGroup}/${seat.seatNumber}/${ticketID}`;
             this.$.ajaxAssignSeat.generateRequest();
           }
 
