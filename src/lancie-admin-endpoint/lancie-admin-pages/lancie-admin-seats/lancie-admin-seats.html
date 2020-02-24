@@ -441,6 +441,10 @@
           }
 
           onAssignSeat(e, request) {
+            if (!request.succeeded) {
+              this.$.editSeatError.setError("Could not ASSIGN SEAT. Please refresh and try again.");
+              return;
+            } 
             this.$.ajaxGetAllSeats.generateRequest();
             this.$.seatDialog.close();
             this.ticketID = '';
