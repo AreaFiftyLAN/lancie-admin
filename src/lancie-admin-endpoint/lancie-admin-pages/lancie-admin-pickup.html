@@ -1,5 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../bower_components/lancie-error/lancie-error.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
@@ -10,12 +12,19 @@
       :host {
         display: block;
       }
+
+      paper-input {
+          max-width: 250px;
+      }
     </style>
 
-    <lancie-ajax auto-fire id="pickupAjax" refurl="tickets/transport" on-lancie-ajax="onResponse"></lancie-ajax>
+    <lancie-ajax id="pickupAjax" method="GET" on-lancie-ajax="onResponse"></lancie-ajax>
 
     <lancie-admin-page-layout endpoint="Pickup">
       <p>Here is an overview of all the people who bought Pickup Service, including relevant information.</p>
+      <lancie-error id="getPickupError"></lancie-error>
+      <paper-input label="Pickup Option Name" value="{{optionName}}"></paper-input>
+      <paper-button on-tap="getPickup">Get pickup</paper-button>
 
       <lancie-admin-table id="table"></lancie-admin-table>
     </lancie-admin-page-layout>
@@ -24,22 +33,28 @@
   <script>
     (function () {
       'use strict';
+      class LancieAdminPickup extends Polymer.Element {
+        static get is() {
+          return 'lancie-admin-pickup';
+        }
 
-      Polymer({
-        is: 'lancie-admin-pickup',
-        properties: {
-          data: Object,
-          endpoint: String,
-        },
+        static get properties() {
+          return {
+            data: Object,
+            endpoint: String,
+          };
+        }
 
-        onResponse: function(e, request) {
-          if (request.succeeded) {
+        onResponse(e, request) {
+            if (!request.succeeded) {
+                this.$.getPickupError.setError("We cannot find a TicketOption with that name. Try again");
+                return;
+            }
             const data = request.response.map(person => this.mapData(person));
             this.$.table.setData(data);
-          }
-        },
+        }
 
-        mapData: function(data) {
+        mapData(data) {
             return {
                 "Ticket ID": data.id,
                 "Name": `${data.owner.profile.firstName} ${data.owner.profile.lastName}`,
@@ -47,9 +62,16 @@
                 "Address": `${data.owner.profile.address} ${data.owner.profile.zipcode} ${data.owner.profile.city}`,
                 "Phone number": data.owner.profile.phoneNumber,
             };
-        },
+        }
 
-      });
+        getPickup() {
+            this.$.getPickupError.clear();
+            this.$.pickupAjax.refurl = `tickets/transport/${this.optionName}`;
+            this.$.pickupAjax.generateRequest();
+        }
+      }
+
+      customElements.define(LancieAdminPickup.is, LancieAdminPickup);
     })();
   </script>
 </dom-module>
