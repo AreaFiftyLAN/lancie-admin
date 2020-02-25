@@ -1,0 +1,55 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
+
+<link rel="import" href="../lancie-admin-page-layout.html">
+<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+
+<dom-module id="lancie-admin-pickup">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <lancie-ajax auto-fire id="pickupAjax" refurl="tickets/transport" on-lancie-ajax="onResponse"></lancie-ajax>
+
+    <lancie-admin-page-layout endpoint="Pickup">
+      <p>Here is an overview of all the people who bought Pickup Service, including relevant information.</p>
+
+      <lancie-admin-table id="table"></lancie-admin-table>
+    </lancie-admin-page-layout>
+
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'lancie-admin-pickup',
+        properties: {
+          data: Object,
+          endpoint: String,
+        },
+
+        onResponse: function(e, request) {
+          if (request.succeeded) {
+            const data = request.response.map(person => this.mapData(person));
+            this.$.table.setData(data);
+          }
+        },
+
+        mapData: function(data) {
+            return {
+                "Ticket ID": data.id,
+                "Name": `${data.owner.profile.firstName} ${data.owner.profile.lastName}`,
+                "Email": data.owner.email,
+                "Address": `${data.owner.profile.address} ${data.owner.profile.zipcode} ${data.owner.profile.city}`,
+                "Phone number": data.owner.profile.phoneNumber,
+            };
+        },
+
+      });
+    })();
+  </script>
+</dom-module>
