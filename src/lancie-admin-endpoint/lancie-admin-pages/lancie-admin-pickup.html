@@ -34,18 +34,18 @@
 
         onResponse: function(e, request) {
           if (request.succeeded) {
-            const data = request.response.map(person => this.filterData(person));
+            const data = request.response.map(person => this.mapData(person));
             this.$.table.setData(data);
           }
         },
 
-        filterData: function(data) {
+        mapData: function(data) {
             return {
                 "Ticket ID": data.id,
                 "Name": `${data.owner.profile.firstName} ${data.owner.profile.lastName}`,
                 "Email": data.owner.email,
                 "Address": `${data.owner.profile.address} ${data.owner.profile.zipcode} ${data.owner.profile.city}`,
-                "Phone number": data.owner.profile.phoneNumber
+                "Phone number": data.owner.profile.phoneNumber,
             };
         },
 
