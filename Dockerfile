@@ -1,4 +1,4 @@
-FROM node:8 AS builder
+FROM node:12 AS builder
 WORKDIR /src
 COPY . .
 RUN docker/dockerbuild.sh
