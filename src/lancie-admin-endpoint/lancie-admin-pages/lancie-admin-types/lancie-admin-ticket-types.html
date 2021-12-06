@@ -55,6 +55,7 @@
         <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
         <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option To Type(s)</paper-button>
         <paper-button on-tap="openChangeBuyableDialog">Change Buyable</paper-button>
+        <paper-button on-tap="openCDeleteTypeDialog">Delete Type</paper-button>
       </div>
     </paper-card>
 
@@ -247,7 +248,18 @@
             "buyable": !buyable.buyable,
             "possibleOptions": buyable.possibleOptions
           };
-        }
+        },
+
+        openCDeleteTypeDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.changeBuyableOfTypeDialog.open();
+        },
 
       });
     })();
