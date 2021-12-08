@@ -40,8 +40,8 @@
     </lancie-ajax>
 
     <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
-
     <lancie-ajax id="ajaxChangeBuyableOfType" method="PUT" body="[[getBuyableBody(selectedType)]]" refurl="tickets/tickettype/[[selectedId]]"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteType" method="DELETE" body="" refurl="tickets/types/[[selectedId]]"></lancie-ajax>
 
     <paper-card heading="Tickets/types">
       <div class="card-content">
@@ -55,7 +55,7 @@
         <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
         <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option To Type(s)</paper-button>
         <paper-button on-tap="openChangeBuyableDialog">Change Buyable</paper-button>
-        <paper-button on-tap="openCDeleteTypeDialog">Delete Type</paper-button>
+        <paper-button on-tap="openDeleteTypeDialog">Delete Type</paper-button>
       </div>
     </paper-card>
 
@@ -120,6 +120,21 @@
       </div>
     </lancie-dialog>
 
+    <lancie-dialog id="changeDeleteTypeDialog">
+      <h2>Delete Type</h2>
+      <div class="dialog-content">
+        <h4>Delete the following Types (cannot be undone!):</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDeleteTypes">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
+
   </template>
   <script>
     (function () {
@@ -174,7 +189,7 @@
           if (!request.succeeded) {
             this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.");
             return;
-          } 
+          }
 
           this.$.addTicketTypeDialog.close();
           this.$.getTypeAjax.generateRequest();
@@ -250,7 +265,7 @@
           };
         },
 
-        openCDeleteTypeDialog: function() {
+        openDeleteTypeDialog: function() {
           if (!this.$.table.selected().length > 0) {
             this.$.noTypeSelectedError.setError('Please select a type first.');
             return;
@@ -258,7 +273,20 @@
           this.selectedTypes = this.$.table.selected();
           this.$.noTypeSelectedError.clear();
           this.$.typeSelected.render();
-          this.$.changeBuyableOfTypeDialog.open();
+          this.$.changeDeleteTypeDialog.open();
+        },
+
+        tryDeleteTypes: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteType(t))
+          this.$.table.clearSelection();
+          this.$.changeDeleteTypeDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryDeleteType: function(t) {
+          this.selectedType = t;
+          this.selectedId = t.id;
+          this.$.ajaxDeleteType.generateRequest();
         },
 
       });
