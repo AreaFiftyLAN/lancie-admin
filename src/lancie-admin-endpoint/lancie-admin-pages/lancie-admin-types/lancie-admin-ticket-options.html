@@ -176,6 +176,9 @@
           }
 
           this.$.table.setData(request.response);
+          this.fire('set-options', {'options': request.response});
+          this.options = request.response;
+
         }
       });
     })();
