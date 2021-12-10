@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
-
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
 
@@ -10,17 +10,57 @@
       :host {
         display: block;
       }
+
+      paper-card {
+        width: calc(100% - 32px);
+        margin: 16px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 640px) {
+        paper-card {
+          width: 100%;
+          margin: 0;
+        }
+      }
     </style>
 
     <lancie-ajax auto-fire id="endpointAjax" refurl="orders" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="orders">
-      <p>Here is where the orders will be.</p>
-      <p>Requests will be on <code>/api/v1/orders</code></p>
+    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="[[selectedId]]"></lancie-ajax>
 
-      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
-    </lancie-admin-page-layout>
+    <paper-card heading="Orders">
+      <div class="card-content">
+      <p>Here is where the orders will be.</p>
+        <p>Requests will be on <code>/api/v1/orders</code></p>
+
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+      </div>
+      <div class="card-actions">
+        <lancie-error id="noTypeSelectedError"></lancie-error>
+        <!-- <paper-button on-tap="openAddTypeDialog">Add Ticket</paper-button> -->
+        <paper-button on-tap="openDeleteOrderDialog">Delete</paper-button>
+      </div>
+    </paper-card>
+
+    <lancie-dialog id="deleteOrderDialog">
+      <h2>Delete Ticket</h2>
+      <div class="dialog-content">
+        <h4>Delete the following Tickets (cannot be undone!):</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.id]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDeletetickets">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
 
   </template>
   <script>
@@ -58,6 +98,29 @@
           if (request.succeeded) {
             this.$.table.setData(request.response);
           }
+        },
+
+        openDeleteOrderDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.deleteOrderDialog.open();
+        },
+
+        tryDeleteOrders: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteOrder(t))
+          this.$.table.clearSelection();
+          this.$.deleteOrderDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryDeleteOrders: function(t) {
+          this.selectedId = t.id;
+          this.$.ajaxDeleteTicket.generateRequest();
         },
       });
     })();
