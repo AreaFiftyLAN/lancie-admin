@@ -31,7 +31,7 @@
     <lancie-ajax auto-fire id="endpointAjax" refurl="orders" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
-    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="[[selectedId]]"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="orders/[[selectedId]]"></lancie-ajax>
 
     <paper-card heading="Orders">
       <div class="card-content">
@@ -48,9 +48,9 @@
     </paper-card>
 
     <lancie-dialog id="deleteOrderDialog">
-      <h2>Delete Ticket</h2>
+      <h2>Delete Order</h2>
       <div class="dialog-content">
-        <h4>Delete the following Tickets (cannot be undone!):</h4>
+        <h4>Delete the following Orders (cannot be undone!):</h4>
         <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
           <p>[[item.id]]</p>
         </template>
@@ -58,7 +58,7 @@
 
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryDeletetickets">Confirm</paper-button>
+        <paper-button on-tap="tryDeleteOrders">Confirm</paper-button>
       </div>
     </lancie-dialog>
 
@@ -118,7 +118,7 @@
           this.$.getTypeAjax.generateRequest();
         },
 
-        tryDeleteOrders: function(t) {
+        tryDeleteOrder: function(t) {
           this.selectedId = t.id;
           this.$.ajaxDeleteTicket.generateRequest();
         },
