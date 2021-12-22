@@ -10,22 +10,6 @@
       :host {
         display: block;
       }
-
-      paper-card {
-        width: calc(100% - 32px);
-        margin: 16px;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      @media (max-width: 640px) {
-        paper-card {
-          width: 100%;
-          margin: 0;
-        }
-      }
     </style>
 
     <lancie-ajax auto-fire id="endpointAjax" refurl="orders" on-lancie-ajax="onResponse">
@@ -33,19 +17,19 @@
 
     <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="orders/[[selectedId]]"></lancie-ajax>
 
-    <paper-card heading="Orders">
-      <div class="card-content">
-      <p>Here is where the orders will be.</p>
+    <lancie-admin-page-layout heading="Orders">
+      <div>
+        <p>Here is where the orders will be.</p>
         <p>Requests will be on <code>/api/v1/orders</code></p>
 
         <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
-      <div class="card-actions">
+      <div slot="card-actions">
         <lancie-error id="noTypeSelectedError"></lancie-error>
         <!-- <paper-button on-tap="openAddTypeDialog">Add Ticket</paper-button> -->
         <paper-button on-tap="openDeleteOrderDialog">Delete</paper-button>
       </div>
-    </paper-card>
+    </lancie-admin-page-layout>
 
     <lancie-dialog id="deleteOrderDialog">
       <h2>Delete Order</h2>

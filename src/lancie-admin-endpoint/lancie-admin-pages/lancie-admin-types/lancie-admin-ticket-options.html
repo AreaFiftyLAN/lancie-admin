@@ -20,36 +20,19 @@
       :host {
         display: block;
       }
-
-      paper-card {
-        width: calc(100% - 32px);
-        margin: 16px;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      @media (max-width: 640px) {
-        paper-card {
-          width: 100%;
-          margin: 0;
-        }
-      }
     </style>
 
     <lancie-ajax auto-fire id="getOptionAjax" refurl="tickets/options" on-lancie-ajax="onOptionResponse"></lancie-ajax>
 
     <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[selectedId]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
-    <paper-card heading="Ticket Options">
-      <div class="card-content">
+    <lancie-admin-page-layout heading="Ticket Options">
+      <div>
         <p>Here is where the options will be.</p>
         <p>Requests will be on <code>/api/v1/tickets/options</code></p>
-
         <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
-      <div class="card-actions">
+      <div slot="card-actions">
         <lancie-error id="noOptionSelectedError"></lancie-error>
         <paper-button on-tap="openAddOptionDialog">Add Ticket Option</paper-button>
         <paper-button on-tap="openDeleteOptionDialog">Delete Ticket Option</paper-button>
