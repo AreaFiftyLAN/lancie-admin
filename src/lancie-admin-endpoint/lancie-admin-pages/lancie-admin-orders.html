@@ -15,7 +15,7 @@
     <lancie-ajax auto-fire id="endpointAjax" refurl="orders" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
-    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="orders/[[selectedId]]"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="orders/[[selectedId]]" on-response="onDeleteOrderResponse"></lancie-ajax>></lancie-ajax>
 
     <lancie-admin-page-layout heading="Orders">
       <div>
@@ -105,6 +105,14 @@
         tryDeleteOrder: function(t) {
           this.selectedId = t.id;
           this.$.ajaxDeleteTicket.generateRequest();
+        },
+
+        onDeleteOrderResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.addDialogError.setError("Could not delete ticket. Please refresh and try again.");
+            return;
+          }
+          this.$.endpointAjax.generateRequest();
         },
       });
     })();
