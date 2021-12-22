@@ -18,45 +18,30 @@
       :host {
         display: block;
       }
-
-      paper-card {
-        width: calc(100% - 32px);
-        margin: 16px;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      @media (max-width: 640px) {
-        paper-card {
-          width: 100%;
-          margin: 0;
-        }
-      }
     </style>
 
     <lancie-ajax auto-fire id="getTypeAjax" refurl="tickets/types" on-lancie-ajax="onTypeResponse">
     </lancie-ajax>
 
     <lancie-ajax id="ajaxAddOptionToType" method="POST" body="[[getOptionBody(selectedOption)]]" refurl="tickets/types/[[selectedId]]/option"></lancie-ajax>
-
     <lancie-ajax id="ajaxChangeBuyableOfType" method="PUT" body="[[getBuyableBody(selectedType)]]" refurl="tickets/tickettype/[[selectedId]]"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteType" method="DELETE" body="" refurl="tickets/types/[[selectedId]]" on-response="onDeleteTypeResponse"></lancie-ajax>
 
-    <paper-card heading="Tickets/types">
-      <div class="card-content">
+    <lancie-admin-page-layout heading="Tickets/types">
+      <div>
         <p>Here is where the types will be.</p>
         <p>Requests will be on <code>/api/v1/tickets/types</code></p>
 
         <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
-      <div class="card-actions">
+      <div slot="card-actions">
         <lancie-error id="noTypeSelectedError"></lancie-error>
         <paper-button on-tap="openAddTypeDialog">Add Ticket Type</paper-button>
         <paper-button on-tap="openAddOptionToTypeDialog">Add Ticket Option To Type(s)</paper-button>
         <paper-button on-tap="openChangeBuyableDialog">Change Buyable</paper-button>
+        <paper-button on-tap="openDeleteTypeDialog">Delete Type</paper-button>
       </div>
-    </paper-card>
+    </lancie-admin-page-layout>
 
     <lancie-dialog id="addTicketTypeDialog">
       <h2>Add Ticket Type</h2>
@@ -119,6 +104,21 @@
       </div>
     </lancie-dialog>
 
+    <lancie-dialog id="changeDeleteTypeDialog">
+      <h2>Delete Type</h2>
+      <div class="dialog-content">
+        <h4>Deleting a Type can only be done when there are no more tickets with this type. Delete the following Types (cannot be undone!):</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDeleteTypes">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
+
   </template>
   <script>
     (function () {
@@ -173,7 +173,7 @@
           if (!request.succeeded) {
             this.$.addDialogError.setError("Could not add ticket type. Please refresh and try again.");
             return;
-          } 
+          }
 
           this.$.addTicketTypeDialog.close();
           this.$.getTypeAjax.generateRequest();
@@ -247,7 +247,38 @@
             "buyable": !buyable.buyable,
             "possibleOptions": buyable.possibleOptions
           };
-        }
+        },
+
+        openDeleteTypeDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.changeDeleteTypeDialog.open();
+        },
+
+        tryDeleteTypes: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteType(t))
+          this.$.table.clearSelection();
+          this.$.changeDeleteTypeDialog.close();
+        },
+
+        tryDeleteType: function(t) {
+          this.selectedType = t;
+          this.selectedId = t.id;
+          this.$.ajaxDeleteType.generateRequest();
+        },
+
+        onDeleteTypeResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.addDialogError.setError("Could not delete ticket type. Please refresh and try again.");
+            return;
+          }
+          this.$.getTypeAjax.generateRequest();
+        },
 
       });
     })();

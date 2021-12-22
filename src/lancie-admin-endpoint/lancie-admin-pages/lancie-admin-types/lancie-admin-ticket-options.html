@@ -20,43 +20,29 @@
       :host {
         display: block;
       }
-
-      paper-card {
-        width: calc(100% - 32px);
-        margin: 16px;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      @media (max-width: 640px) {
-        paper-card {
-          width: 100%;
-          margin: 0;
-        }
-      }
     </style>
 
     <lancie-ajax auto-fire id="getOptionAjax" refurl="tickets/options" on-lancie-ajax="onOptionResponse"></lancie-ajax>
 
-    <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[deleteOption.id]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteTicketOption" method="DELETE" refurl="tickets/options/[[selectedId]]" on-lancie-ajax="onDeleteResponse"></lancie-ajax>
 
-    <paper-card heading="Ticket Options">
-      <div class="card-content" on-delete-ticket-option-dialog="deleteTicketOptionDialog">
-        <lancie-error id="optionError"></lancie-error>
-        <template is="dom-repeat" items="[[options]]">
-          <lancie-admin-ticket-option option="[[item]]"></lancie-admin-ticket-option>
-        </template>
+    <lancie-admin-page-layout heading="Ticket Options">
+      <div>
+        <p>Here is where the options will be.</p>
+        <p>Requests will be on <code>/api/v1/tickets/options</code></p>
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
-      <div class="card-actions">
+      <div slot="card-actions">
+        <lancie-error id="noOptionSelectedError"></lancie-error>
         <paper-button on-tap="openAddOptionDialog">Add Ticket Option</paper-button>
-      </div> 
+        <paper-button on-tap="openDeleteOptionDialog">Delete Ticket Option</paper-button>
+      </div>
     </paper-card>
+
     <lancie-dialog id="addTicketOptionDialog">
       <h2>Add Ticket Option</h2>
       <div class="dialog-content">
-        <lancie-error id="addDialogError"></lancie-error>
+        <lancie-error id="addOptionDialogError"></lancie-error>
         <lancie-form id="addTicketOptionForm" refurl="tickets/options" on-response="onAddOptionResponse">
           <paper-input label="Name" name="name" error-message="This field is required!" auto-validate required></paper-input>
           <paper-input label="Price" name="price" step=".01" type="number" error-message="This field is required!" auto-validate required></paper-input>
@@ -68,15 +54,17 @@
     </lancie-dialog>
 
     <lancie-dialog id="deleteTicketOptionDialog">
-      <h2>Confirm deletion</h2>
+      <h2>Delete Option</h2>
       <div class="dialog-content">
-        <lancie-error id="dialogError"></lancie-error>
-        <h4>Are you certain you want to delete this ticket option?</h4>
-        <p>[[deleteOption.name]]</p>
+        <h4>Deleting a Option can only be done when there are no more tickets with this Option. Delete the following Option (cannot be undone!):</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.name]]</p>
+        </template>
       </div>
+
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryDeleteOption" class="confirm-delete-button">Delete</paper-button>
+        <paper-button on-tap="tryDeleteOptions" class="confirm-delete-button">Delete</paper-button>
       </div>
     </lancie-dialog>
   </template>
@@ -127,17 +115,30 @@
           }
 
           this.$.addTicketOptionDialog.close();
-          this.$.getOptionAjax.generateRequest(); 
+          this.$.getOptionAjax.generateRequest();
         },
 
-        deleteTicketOptionDialog: function(event) {
-          this.deleteOption = this.options.find(option => {
-            return option.id === event.detail.id;
-          });
+        openDeleteOptionDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noOptionSelectedError.setError('Please select a option first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noOptionSelectedError.clear();
+          this.$.typeSelected.render();
           this.$.deleteTicketOptionDialog.open();
         },
 
-        tryDeleteOption: function() {
+        tryDeleteOptions: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteOption(t))
+          this.$.table.clearSelection();
+          this.$.deleteTicketOptionDialog.close();
+          this.$.getTypeAjax.generateRequest();
+        },
+
+        tryDeleteOption: function(t) {
+          this.selectedType = t;
+          this.selectedId = t.id;
           this.$.ajaxDeleteTicketOption.generateRequest();
         },
 
@@ -157,8 +158,10 @@
             return;
           }
 
+          this.$.table.setData(request.response);
           this.fire('set-options', {'options': request.response});
           this.options = request.response;
+
         }
       });
     })();

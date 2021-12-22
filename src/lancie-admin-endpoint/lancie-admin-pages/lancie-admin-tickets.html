@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
-
+<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
 
@@ -15,12 +15,36 @@
     <lancie-ajax auto-fire id="endpointAjax" refurl="tickets" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
-    <lancie-admin-page-layout endpoint="tickets">
-      <p>Here is where the [[endpoint]] will be.</p>
-      <p>Requests will be on <code>/api/v1/tickets</code></p>
+    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="tickets/[[selectedId]]" on-response="onDeleteTicketResponse"></lancie-ajax>
 
-      <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+    <lancie-admin-page-layout heading="Tickets">
+      <div></div>
+        <p>Here is where the tickets will be.</p>
+        <p>Requests will be on <code>/api/v1/tickets</code></p>
+
+        <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
+      </div>
+      <div slot="card-actions">
+        <lancie-error id="noTypeSelectedError"></lancie-error>
+        <!-- <paper-button on-tap="openAddTypeDialog">Add Ticket</paper-button> -->
+        <paper-button on-tap="openDeleteTicketDialog">Delete</paper-button>
+      </div>
     </lancie-admin-page-layout>
+
+    <lancie-dialog id="deleteTicketDialog">
+      <h2>Delete Ticket</h2>
+      <div class="dialog-content">
+        <h4>Delete the following Tickets (cannot be undone!):</h4>
+        <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
+          <p>[[item.id]]</p>
+        </template>
+      </div>
+
+      <div class="dialog-actions">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="tryDeleteTickets">Confirm</paper-button>
+      </div>
+    </lancie-dialog>
 
   </template>
   <script>
@@ -60,6 +84,37 @@
           if (request.succeeded) {
             this.$.table.setData(request.response);
           }
+        },
+
+        openDeleteTicketDialog: function() {
+          if (!this.$.table.selected().length > 0) {
+            this.$.noTypeSelectedError.setError('Please select a type first.');
+            return;
+          }
+          this.selectedTypes = this.$.table.selected();
+          this.$.noTypeSelectedError.clear();
+          this.$.typeSelected.render();
+          this.$.deleteTicketDialog.open();
+        },
+
+        tryDeleteTickets: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteTicket(t))
+          this.$.table.clearSelection();
+          this.$.deleteTicketDialog.close();
+          // this.$.getTypeAjax.generateRequest();
+        },
+
+        tryDeleteTicket: function(t) {
+          this.selectedId = t.id;
+          this.$.ajaxDeleteTicket.generateRequest();
+        },
+
+        onDeleteTicketResponse: function(e, request) {
+          if (!request.succeeded) {
+            this.$.addDialogError.setError("Could not delete ticket. Please refresh and try again.");
+            return;
+          }
+          this.$.endpointAjax.generateRequest();
         },
       });
     })();
