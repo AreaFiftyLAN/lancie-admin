@@ -3,6 +3,7 @@
 <link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+<link rel="import" href="lancie-admin-trasfer-tickets.html">
 
 <dom-module id="lancie-admin-tickets">
   <template>
@@ -45,6 +46,8 @@
         <paper-button on-tap="tryDeleteTickets">Confirm</paper-button>
       </div>
     </lancie-dialog>
+
+    <lancie-admin-transfer-tickets></lancie-admin-transfer-tickets>
 
   </template>
   <script>

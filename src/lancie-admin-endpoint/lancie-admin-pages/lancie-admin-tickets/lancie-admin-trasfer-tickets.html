@@ -4,7 +4,7 @@
 <link rel="import" href="../lancie-admin-page-layout.html">
 <link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
 
-<dom-module id="lancie-admin-orders">
+<dom-module id="lancie-admin-transfer-tickets">
   <template>
     <style>
       :host {
@@ -12,29 +12,29 @@
       }
     </style>
 
-    <lancie-ajax auto-fire id="endpointAjax" refurl="orders" on-lancie-ajax="onResponse">
+    <lancie-ajax auto-fire id="endpointAjax" refurl="ticket_transfer_token" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
-    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="orders/[[selectedId]]" on-response="onDeleteOrderResponse"></lancie-ajax>
+    <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="ticket_transfer_token/[[selectedId]]" on-response="onDeleteTransferTicketResponse"></lancie-ajax>
 
-    <lancie-admin-page-layout heading="Orders">
-      <div>
-        <p>Here is where the orders will be.</p>
-        <p>Requests will be on <code>/api/v1/orders</code></p>
+    <lancie-admin-page-layout heading="Tickets">
+      <div></div>
+        <p>Here is where the transfer tickets will be.</p>
+        <p>Requests will be on <code>/api/v1/ticket_transfer_token</code></p>
 
         <lancie-admin-table id="table" column-mappings="[[mappings]]" column-renderers="[[renderers]]"></lancie-admin-table>
       </div>
       <div slot="card-actions">
         <lancie-error id="noTypeSelectedError"></lancie-error>
         <!-- <paper-button on-tap="openAddTypeDialog">Add Ticket</paper-button> -->
-        <paper-button on-tap="openDeleteOrderDialog">Delete</paper-button>
+        <paper-button on-tap="openDeleteTransferTicketDialog">Delete</paper-button>
       </div>
     </lancie-admin-page-layout>
 
-    <lancie-dialog id="deleteOrderDialog">
-      <h2>Delete Order</h2>
+    <lancie-dialog id="deleteTransferTicketDialog">
+      <h2>Delete Transfer Ticket</h2>
       <div class="dialog-content">
-        <h4>Delete the following Orders (cannot be undone!):</h4>
+        <h4>Delete the following Transfer Tickets (cannot be undone!):</h4>
         <template id="typeSelected" is="dom-repeat" items="[[selectedTypes]]">
           <p>[[item.id]]</p>
         </template>
@@ -42,7 +42,7 @@
 
       <div class="dialog-actions">
         <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="tryDeleteOrders">Confirm</paper-button>
+        <paper-button on-tap="tryTransferDeleteTickets">Confirm</paper-button>
       </div>
     </lancie-dialog>
 
@@ -52,14 +52,16 @@
       'use strict';
 
       Polymer({
-        is: 'lancie-admin-orders',
+        is: 'lancie-admin-transfer-tickets',
         properties: {
           data: Object,
+          endpoint: String,
           mappings: {
             type: Object,
             value: function() {
               return {
-                user: ['email'],
+                owner: ['email'],
+                type: ['name'],
               };
             }
           },
@@ -67,9 +69,9 @@
             type: Object,
             value: function() {
               return {
-                tickets: function(data) {
-                  var text = data.reduce(function(text, t) {
-                    return text + t.id + ', ';
+                enabledOptions: function(data) {
+                  var text = data.reduce(function(text, o){
+                    return text + o.name + ', ';
                   }, '');
                   return text.substr(0, text.length - 2);
                 },
@@ -84,7 +86,7 @@
           }
         },
 
-        openDeleteOrderDialog: function() {
+        openDeleteTransferTicketDialog: function() {
           if (!this.$.table.selected().length > 0) {
             this.$.noTypeSelectedError.setError('Please select a type first.');
             return;
@@ -92,22 +94,22 @@
           this.selectedTypes = this.$.table.selected();
           this.$.noTypeSelectedError.clear();
           this.$.typeSelected.render();
-          this.$.deleteOrderDialog.open();
+          this.$.deleteTransferTicketDialog.open();
         },
 
-        tryDeleteOrders: function() {
-          this.selectedTypes.forEach(t => this.tryDeleteOrder(t))
+        tryDeleteTransferTickets: function() {
+          this.selectedTypes.forEach(t => this.tryDeleteTransferTicket(t))
           this.$.table.clearSelection();
-          this.$.deleteOrderDialog.close();
-          this.$.getTypeAjax.generateRequest();
+          this.$.deleteTransferTicketDialog.close();
+          // this.$.getTypeAjax.generateRequest();
         },
 
-        tryDeleteOrder: function(t) {
+        tryDeleteTransferTicket: function(t) {
           this.selectedId = t.id;
-          this.$.ajaxDeleteTicket.generateRequest();
+          this.$.ajaxDeleteTransferTicket.generateRequest();
         },
 
-        onDeleteOrderResponse: function(e, request) {
+        onDeleteTransferTicketResponse: function(e, request) {
           if (!request.succeeded) {
             this.$.addDialogError.setError("Could not delete ticket. Please refresh and try again.");
             return;
