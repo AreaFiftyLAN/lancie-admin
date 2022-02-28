@@ -1,8 +1,8 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/lancie-ajax/lancie-ajax.html">
-<link rel="import" href="../../../bower_components/lancie-dialog/lancie-dialog.html">
-<link rel="import" href="../lancie-admin-page-layout.html">
-<link rel="import" href="../../lancie-admin-table/lancie-admin-table.html">
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/lancie-ajax/lancie-ajax.html">
+<link rel="import" href="../../../../bower_components/lancie-dialog/lancie-dialog.html">
+<link rel="import" href="../../lancie-admin-page-layout.html">
+<link rel="import" href="../../../lancie-admin-table/lancie-admin-table.html">
 
 <dom-module id="lancie-admin-transfer-tickets">
   <template>
@@ -12,13 +12,13 @@
       }
     </style>
 
-    <lancie-ajax auto-fire id="endpointAjax" refurl="ticket_transfer_token" on-lancie-ajax="onResponse">
+    <lancie-ajax auto-fire id="endpointTransferticketAjax" refurl="ticket_transfer_token" on-lancie-ajax="onResponse">
     </lancie-ajax>
 
     <lancie-ajax id="ajaxDeleteTicket" method="DELETE" body="" refurl="ticket_transfer_token/[[selectedId]]" on-response="onDeleteTransferTicketResponse"></lancie-ajax>
 
     <lancie-admin-page-layout heading="Tickets">
-      <div></div>
+      <div>
         <p>Here is where the transfer tickets will be.</p>
         <p>Requests will be on <code>/api/v1/ticket_transfer_token</code></p>
 
