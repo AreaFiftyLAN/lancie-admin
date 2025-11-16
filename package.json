@@ -9,7 +9,7 @@
     "gulp-babel-minify": "^0.2.0",
     "gulp-html-minifier": "^0.1.8",
     "gulp-if": "^2.0.1",
-    "gulp-imagemin": "^3.3.0",
+    "gulp-imagemin": "^9.2.0",
     "gulp-jshint": "^2.0.2",
     "gulp-replace": "^0.6.1",
     "gulp-style-modules": "^0.1.0",
